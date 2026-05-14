@@ -23,6 +23,7 @@ extension AppRoute: CustomStringConvertible {
 
 // MARK: - Auth (demo-only)
 
+@MainActor
 final class AuthState {
     static let shared = AuthState()
     var isLoggedIn = false
