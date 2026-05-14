@@ -1,18 +1,38 @@
 # iRouter
 
-A pure SwiftUI routing package for iOS 17+. Type-safe navigation for Push, Sheet, and FullScreenCover, with a built-in filter chain, dedup, and flush mode. Zero third-party dependencies.
+A pure SwiftUI routing library for iOS 17+ and macOS 14+. Type-safe navigation for Push, Sheet, and FullScreenCover — with a built-in filter chain, dedup, and flush mode. Zero third-party dependencies.
+
+![iOS 17+](https://img.shields.io/badge/iOS-17%2B-blue)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
+![Swift 6](https://img.shields.io/badge/Swift-6.0-orange)
+![SPM](https://img.shields.io/badge/SPM-compatible-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+## Features
+
+- **Type-safe routes** — navigation targets are plain `Hashable & Sendable` enum cases; no stringly-typed paths
+- **Three presentation modes** — Push (`NavigationStack`), Sheet, and FullScreenCover from a single unified API
+- **Filter chain** — intercept any navigation before it executes; allow, block, or redirect to another route
+- **Dedup & Flush** — skip duplicate push targets; clear all modals in one call for deep links and push notifications
+- **Nested navigation** — each Sheet / FullScreenCover owns an independent child router with its own stack, inheriting the parent's filters
+- **SwiftUI-native** — `@Observable`, `@MainActor`, zero UIKit, zero third-party dependencies
 
 ## Requirements
 
-- iOS 17+
-- Swift 6.0+
-- Xcode 16+
+| | Minimum |
+|---|---|
+| iOS | 17.0 |
+| macOS | 14.0 |
+| Swift | 6.0 |
+| Xcode | 16.3 |
+
+> **Note:** FullScreenCover is not available on macOS. Push and Sheet work on both platforms.
 
 ## Installation
 
 ### Swift Package Manager
 
-In Xcode choose **File → Add Package Dependencies**, enter the repository URL, or add it directly to `Package.swift`:
+In Xcode choose **File → Add Package Dependencies**, enter the repository URL, or add to `Package.swift` directly:
 
 ```swift
 dependencies: [
@@ -54,7 +74,7 @@ enum AppRoute: Hashable, Sendable {
     ]
 )
 
-// 3. Place IRouterView at the root
+// 3. Place IRouterView at the root of your scene
 IRouterView(router: router) { route in
     switch route {
     case .home:           HomeView()
@@ -64,7 +84,7 @@ IRouterView(router: router) { route in
     }
 }
 
-// 4. Navigate from any child view
+// 4. Navigate from any child view via @Environment
 struct HomeView: View {
     @Environment(IRouter<AppRoute>.self) var router
 
@@ -115,6 +135,19 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
 
 Wraps a `NavigationStack` and drives `.sheet` / `.fullScreenCover` from the router state. Injects the router into the environment so any child view can access it via `@Environment`.
 
+### IRouterContext
+
+```swift
+@MainActor
+public final class IRouterContext<Route: Hashable & Sendable>: Identifiable {
+    public let id: UUID
+    public let route: Route
+    public let childRouter: IRouter<Route>
+}
+```
+
+Created internally when a Sheet or FullScreenCover is presented. `childRouter` drives the modal's own independent navigation stack and inherits the parent's filter array.
+
 ### IRouterFilter
 
 ```swift
@@ -128,7 +161,7 @@ public struct IRouterFilter<Route: Hashable & Sendable>: Sendable {
 }
 ```
 
-Filters run in registration order before every navigation. The first `.block` or `.redirect` terminates the chain. A redirected route goes through the same filter chain.
+Filters run in registration order before every navigation call. The first `.block` or `.redirect` terminates the chain. A redirected route re-enters the same filter chain from the top.
 
 ### IRouterPresentation
 
@@ -144,12 +177,42 @@ public enum IRouterPresentation: Sendable {
 
 | Parameter | Default | Description |
 |---|---|---|
-| `dedup` | `false` | Skip push if route equals the current stack top |
+| `dedup` | `false` | Skip push if the route equals the current stack top |
 | `flush` | `false` | Dismiss all modals before navigating — useful for deep links and push notifications |
+
+## Filter Examples
+
+### Login guard
+
+```swift
+IRouterFilter { route, _ in
+    if case .profile = route, !Auth.isLoggedIn {
+        return .redirect(.login, .sheet)
+    }
+    return .allow
+}
+```
+
+### Block during loading
+
+```swift
+IRouterFilter { [weak self] _, _ in
+    self?.isLoading == true ? .block : .allow
+}
+```
+
+### Analytics logging
+
+```swift
+IRouterFilter { route, presentation in
+    Analytics.track(route: route, via: presentation)
+    return .allow
+}
+```
 
 ## Multi-Tab Setup
 
-Each tab gets its own `IRouter` instance. They share no state by default:
+Each tab gets its own `IRouter` instance; they share no state by default:
 
 ```swift
 struct RootView: View {
@@ -167,61 +230,42 @@ struct RootView: View {
 }
 ```
 
-## Filter Examples
-
-### Login guard
-
-```swift
-IRouterFilter { route, _ in
-    if case .profile = route, !Auth.isLoggedIn {
-        return .redirect(.login, .sheet)
-    }
-    return .allow
-}
-```
-
-### Analytics logging
-
-```swift
-IRouterFilter { route, presentation in
-    Analytics.track(route: route, via: presentation)
-    return .allow
-}
-```
-
 ## Edge-Case Behavior
 
 | Scenario | Behavior |
 |---|---|
 | `pop()` on empty stack | No-op |
-| `dismiss()` with cover + sheet | Dismisses cover first, then sheet on the next call, then pops the last stack item |
-| `dedup: true` with matching stack top | Ignored |
+| `dismiss()` with cover + sheet | Dismisses cover first; sheet on next call; pops last stack item if no modals remain |
+| `dedup: true` with matching stack top | Push is ignored |
 | `flush: true` | Clears all modals before navigating |
-| Filter `.redirect` | Terminates current chain; redirect target goes through the same filters |
-| Sheet / cover navigation | Each gets its own child `IRouter` that inherits parent filters |
+| Filter `.redirect` | Terminates current chain; redirect target re-enters filters from the top |
+| Sheet / cover navigation | Each gets its own `childRouter` that inherits parent filters |
 
 ## Design Notes
 
-- `IRouter` is `@Observable` and `@MainActor`. State changes (`path`, `sheetContext`, `coverContext`) drive SwiftUI updates automatically.
-- `IRouterView` wraps a `NavigationStack` bound to `router.path`. Sheet and cover are presented via `.sheet(item:)` / `.fullScreenCover(item:)` bound to the context optionals — dismissal is handled by SwiftUI binding, keeping state in sync.
+- `IRouter` is `@Observable` and `@MainActor`. Changes to `path`, `sheetContext`, and `coverContext` drive SwiftUI updates automatically.
+- `IRouterView` binds a `NavigationStack` to `router.path`. Sheet and cover are driven by `.sheet(item:)` / `.fullScreenCover(item:)` bound to the context optionals — SwiftUI handles dismissal via binding, keeping state in sync without manual cleanup.
 - Each sheet or cover creates an `IRouterContext` that owns a child `IRouter` with its own `path`. The child router inherits the parent's filter array, so guards and analytics apply uniformly across the whole hierarchy.
-- The filter chain runs synchronously before every navigation call. Results are evaluated in order; the first non-`.allow` result short-circuits the remaining filters. Redirected routes re-enter the chain from the top, preventing filter bypass.
-- `dismissAndPush` clears modals first, then calls `push`, which runs the filter chain normally.
-- The public API is entirely SwiftUI; callers have no exposure to `NavigationStack` internals.
+- The filter chain runs synchronously before every navigation call. Results are evaluated in order; the first non-`.allow` result short-circuits the rest. Redirected routes re-enter the chain from the top, preventing filter bypass.
+- `dismissAndPush` clears all modals first, then calls `push`, which runs the filter chain normally.
 
 ## Demo
 
-Open `demo/iRouterDemo.xcodeproj`, select a simulator and run. Includes:
+Open `demo/iRouterDemo.xcodeproj`, select a simulator and run. Covers four scenarios:
 
-- **Basic** — push/pop, sheet, fullScreenCover
-- **Filter** — login guard with redirect
-- **Flush** — deep link / push notification simulation
-- **Tab** — two independent routers in a TabView
+- **Basic** — push / pop / popToRoot, sheet, fullScreenCover, live state display
+- **Filter** — allow / block / redirect / chain, with a live filter execution log
+- **Flush** — deep link and push notification simulation using `flush: true`
+- **Tab** — two independent routers in a `TabView`
 
 ## Out of Scope
 
 - URL / deep link parsing (handle in `onOpenURL`, pass result to `push` / `sheet`)
 - Alert / ConfirmationDialog (local UI state, not navigation destinations)
 - Custom transition animations
-- macOS / tvOS / watchOS
+- tvOS / watchOS
 - Back-gesture interception
+
+## License
+
+iRouter is available under the MIT license. See the [LICENSE](LICENSE) file for details.
