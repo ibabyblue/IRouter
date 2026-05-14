@@ -7,23 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BBBB000000000000000000A1 /* iRouterDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B1 /* iRouterDemoApp.swift */; };
+		BBBB000000000000000000A1 /* IRouterDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B1 /* IRouterDemoApp.swift */; };
 		BBBB000000000000000000A2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B2 /* ContentView.swift */; };
 		BBBB000000000000000000A3 /* BasicDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B3 /* BasicDemo.swift */; };
 		BBBB000000000000000000A4 /* FilterDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B4 /* FilterDemo.swift */; };
 		BBBB000000000000000000A5 /* FlushDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B5 /* FlushDemo.swift */; };
 		BBBB000000000000000000A6 /* TabDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B6 /* TabDemo.swift */; };
-		BBBB000000000000000000A7 /* iRouter in Frameworks */ = {isa = PBXBuildFile; productRef = BBBB000000000000000000F9 /* iRouter */; };
+		BBBB000000000000000000A7 /* IRouter in Frameworks */ = {isa = PBXBuildFile; productRef = BBBB000000000000000000F9 /* IRouter */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		BBBB000000000000000000B1 /* iRouterDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iRouterDemoApp.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000B1 /* IRouterDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRouterDemoApp.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B3 /* BasicDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B4 /* FilterDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B5 /* FlushDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlushDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B6 /* TabDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabDemo.swift; sourceTree = "<group>"; };
-		BBBB000000000000000000B7 /* iRouterDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iRouterDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBBB000000000000000000B7 /* IRouterDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IRouterDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,7 +31,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBBB000000000000000000A7 /* iRouter in Frameworks */,
+				BBBB000000000000000000A7 /* IRouter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,28 +41,28 @@
 		BBBB000000000000000000D1 = {
 			isa = PBXGroup;
 			children = (
-				BBBB000000000000000000D2 /* iRouterDemo */,
+				BBBB000000000000000000D2 /* IRouterDemo */,
 				BBBB000000000000000000D3 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		BBBB000000000000000000D2 /* iRouterDemo */ = {
+		BBBB000000000000000000D2 /* IRouterDemo */ = {
 			isa = PBXGroup;
 			children = (
-				BBBB000000000000000000B1 /* iRouterDemoApp.swift */,
+				BBBB000000000000000000B1 /* IRouterDemoApp.swift */,
 				BBBB000000000000000000B2 /* ContentView.swift */,
 				BBBB000000000000000000B3 /* BasicDemo.swift */,
 				BBBB000000000000000000B4 /* FilterDemo.swift */,
 				BBBB000000000000000000B5 /* FlushDemo.swift */,
 				BBBB000000000000000000B6 /* TabDemo.swift */,
 			);
-			path = iRouterDemo;
+			path = IRouterDemo;
 			sourceTree = "<group>";
 		};
 		BBBB000000000000000000D3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BBBB000000000000000000B7 /* iRouterDemo.app */,
+				BBBB000000000000000000B7 /* IRouterDemo.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,9 +70,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BBBB000000000000000000E1 /* iRouterDemo */ = {
+		BBBB000000000000000000E1 /* IRouterDemo */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BBBB000000000000000000F3 /* Build configuration list for PBXNativeTarget "iRouterDemo" */;
+			buildConfigurationList = BBBB000000000000000000F3 /* Build configuration list for PBXNativeTarget "IRouterDemo" */;
 			buildPhases = (
 				BBBB000000000000000000C3 /* Frameworks */,
 				BBBB000000000000000000C1 /* Sources */,
@@ -82,12 +82,12 @@
 			);
 			dependencies = (
 			);
-			name = iRouterDemo;
+			name = IRouterDemo;
 			packageProductDependencies = (
-				BBBB000000000000000000F9 /* iRouter */,
+				BBBB000000000000000000F9 /* IRouter */,
 			);
-			productName = iRouterDemo;
-			productReference = BBBB000000000000000000B7 /* iRouterDemo.app */;
+			productName = IRouterDemo;
+			productReference = BBBB000000000000000000B7 /* IRouterDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -105,7 +105,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BBBB000000000000000000F2 /* Build configuration list for PBXProject "iRouterDemo" */;
+			buildConfigurationList = BBBB000000000000000000F2 /* Build configuration list for PBXProject "IRouterDemo" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -121,7 +121,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BBBB000000000000000000E1 /* iRouterDemo */,
+				BBBB000000000000000000E1 /* IRouterDemo */,
 			);
 		};
 /* End PBXProject section */
@@ -141,7 +141,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBBB000000000000000000A1 /* iRouterDemoApp.swift in Sources */,
+				BBBB000000000000000000A1 /* IRouterDemoApp.swift in Sources */,
 				BBBB000000000000000000A2 /* ContentView.swift in Sources */,
 				BBBB000000000000000000A3 /* BasicDemo.swift in Sources */,
 				BBBB000000000000000000A4 /* FilterDemo.swift in Sources */,
@@ -289,7 +289,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ibabyblue.iRouterDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibabyblue.IRouterDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -318,7 +318,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ibabyblue.iRouterDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibabyblue.IRouterDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -329,7 +329,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BBBB000000000000000000F2 /* Build configuration list for PBXProject "iRouterDemo" */ = {
+		BBBB000000000000000000F2 /* Build configuration list for PBXProject "IRouterDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BBBB000000000000000000F4 /* Debug */,
@@ -338,7 +338,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BBBB000000000000000000F3 /* Build configuration list for PBXNativeTarget "iRouterDemo" */ = {
+		BBBB000000000000000000F3 /* Build configuration list for PBXNativeTarget "IRouterDemo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BBBB000000000000000000F6 /* Debug */,
@@ -357,10 +357,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BBBB000000000000000000F9 /* iRouter */ = {
+		BBBB000000000000000000F9 /* IRouter */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BBBB000000000000000000F8 /* XCLocalSwiftPackageReference ".." */;
-			productName = iRouter;
+			productName = IRouter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

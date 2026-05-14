@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct iRouterDemoApp: App {
+struct IRouterDemoApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

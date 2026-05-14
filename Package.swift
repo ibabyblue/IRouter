@@ -2,13 +2,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "iRouter",
+    name: "IRouter",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .library(name: "iRouter", targets: ["iRouter"]),
+        .library(name: "IRouter", targets: ["IRouter"]),
     ],
     targets: [
-        .target(name: "iRouter"),
-        .testTarget(name: "iRouterTests", dependencies: ["iRouter"]),
+        .target(name: "IRouter"),
+        .testTarget(name: "IRouterTests", dependencies: ["IRouter"]),
     ]
 )

@@ -1,5 +1,5 @@
 import SwiftUI
-import iRouter
+import IRouter
 
 // MARK: - ① Stack Demo
 // Tests: push / pop / popToRoot / dedup

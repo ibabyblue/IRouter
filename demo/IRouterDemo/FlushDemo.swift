@@ -1,5 +1,5 @@
 import SwiftUI
-import iRouter
+import IRouter
 
 // MARK: - ② Modal Demo
 // Tests: sheet / fullScreenCover / dismiss（cover > sheet > pop）

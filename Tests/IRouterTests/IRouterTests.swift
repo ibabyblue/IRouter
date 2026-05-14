@@ -1,5 +1,5 @@
 import Testing
-@testable import iRouter
+@testable import IRouter
 
 private enum TR: Hashable, Sendable {
     case home, detail, settings, login, feed

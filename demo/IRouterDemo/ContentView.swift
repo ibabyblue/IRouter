@@ -1,5 +1,5 @@
 import SwiftUI
-import iRouter
+import IRouter
 
 // MARK: - Route
 

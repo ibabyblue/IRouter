@@ -1,5 +1,5 @@
 import SwiftUI
-import iRouter
+import IRouter
 
 // MARK: - ④ Child Router Demo
 // Tests: sheet/cover 内部有独立导航栈；子 Router 继承父 Filter
