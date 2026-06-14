@@ -1,3 +1,11 @@
+//
+//  IRouterContext.swift
+//  IRouter
+//
+//  Created by ibabyblue on 2026/05/11.
+//  Copyright © 2026 ibabyblue. All rights reserved.
+//
+
 import Foundation
 
 /// Sheet / FullScreenCover 的呈现上下文

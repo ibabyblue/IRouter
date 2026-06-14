@@ -1,3 +1,11 @@
+//
+//  IRouterFilter.swift
+//  IRouter
+//
+//  Created by ibabyblue on 2026/05/11.
+//  Copyright © 2026 ibabyblue. All rights reserved.
+//
+
 /// 路由拦截器
 ///
 /// 在每次导航执行前触发，可放行、拦截或重定向到另一条路由。
