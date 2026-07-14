@@ -17,7 +17,18 @@
 		BBBB000000000000000000A8 /* ModalDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B8 /* ModalDemo.swift */; };
 		BBBB000000000000000000A9 /* NestedDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B9 /* NestedDemo.swift */; };
 		BBBB000000000000000000AA /* MultipleRoutersDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000BA /* MultipleRoutersDemo.swift */; };
+		CCCC000000000000000000A8 /* IRouterDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCC000000000000000000B9 /* IRouterDemoUITests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CCCC000000000000000000D5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BBBB000000000000000000F1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BBBB000000000000000000E1;
+			remoteInfo = IRouterDemo;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		BBBB000000000000000000B1 /* IRouterDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRouterDemoApp.swift; sourceTree = "<group>"; };
@@ -30,6 +41,8 @@
 		BBBB000000000000000000B8 /* ModalDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B9 /* NestedDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NestedDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000BA /* MultipleRoutersDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleRoutersDemo.swift; sourceTree = "<group>"; };
+		CCCC000000000000000000B8 /* IRouterDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IRouterDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CCCC000000000000000000B9 /* IRouterDemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRouterDemoUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +54,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CCCC000000000000000000C5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -48,6 +68,7 @@
 			isa = PBXGroup;
 			children = (
 				BBBB000000000000000000D2 /* IRouterDemo */,
+				CCCC000000000000000000D7 /* IRouterDemoUITests */,
 				BBBB000000000000000000D3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -68,10 +89,19 @@
 			path = IRouterDemo;
 			sourceTree = "<group>";
 		};
+		CCCC000000000000000000D7 /* IRouterDemoUITests */ = {
+			isa = PBXGroup;
+			children = (
+				CCCC000000000000000000B9 /* IRouterDemoUITests.swift */,
+			);
+			path = IRouterDemoUITests;
+			sourceTree = "<group>";
+		};
 		BBBB000000000000000000D3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				BBBB000000000000000000B7 /* IRouterDemo.app */,
+				CCCC000000000000000000B8 /* IRouterDemoUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -99,6 +129,26 @@
 			productReference = BBBB000000000000000000B7 /* IRouterDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		CCCC000000000000000000E2 /* IRouterDemoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CCCC000000000000000000F12 /* Build configuration list for PBXNativeTarget "IRouterDemoUITests" */;
+			buildPhases = (
+				CCCC000000000000000000C4 /* Sources */,
+				CCCC000000000000000000C5 /* Frameworks */,
+				CCCC000000000000000000C6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CCCC000000000000000000D4 /* PBXTargetDependency */,
+			);
+			name = IRouterDemoUITests;
+			packageProductDependencies = (
+			);
+			productName = IRouterDemoUITests;
+			productReference = CCCC000000000000000000B8 /* IRouterDemoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -111,6 +161,10 @@
 				TargetAttributes = {
 					BBBB000000000000000000E1 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					CCCC000000000000000000E2 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = BBBB000000000000000000E1;
 					};
 				};
 			};
@@ -131,12 +185,20 @@
 			projectRoot = "";
 			targets = (
 				BBBB000000000000000000E1 /* IRouterDemo */,
+				CCCC000000000000000000E2 /* IRouterDemoUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		BBBB000000000000000000C2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CCCC000000000000000000C6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -162,7 +224,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CCCC000000000000000000C4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CCCC000000000000000000A8 /* IRouterDemoUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CCCC000000000000000000D4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BBBB000000000000000000E1 /* IRouterDemo */;
+			targetProxy = CCCC000000000000000000D5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		BBBB000000000000000000F4 /* Debug */ = {
@@ -344,6 +422,46 @@
 			};
 			name = Release;
 		};
+		CCCC000000000000000000F10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2Z83ZPSLB9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibabyblue.IRouterDemoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = IRouterDemo;
+			};
+			name = Debug;
+		};
+		CCCC000000000000000000F11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2Z83ZPSLB9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ibabyblue.IRouterDemoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = IRouterDemo;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -361,6 +479,15 @@
 			buildConfigurations = (
 				BBBB000000000000000000F6 /* Debug */,
 				BBBB000000000000000000F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CCCC000000000000000000F12 /* Build configuration list for PBXNativeTarget "IRouterDemoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CCCC000000000000000000F10 /* Debug */,
+				CCCC000000000000000000F11 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
