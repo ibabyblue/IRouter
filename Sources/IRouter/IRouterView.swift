@@ -26,6 +26,15 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
     }
 
     public var body: some View {
+        let sheetPresentationID = presentationCoordinator.presentationID(
+            for: .sheet
+        )
+        #if !os(macOS)
+        let coverPresentationID = presentationCoordinator.presentationID(
+            for: .fullScreenCover
+        )
+        #endif
+
         NavigationStack(path: pathBinding) {
             destination(router.root)
                 .navigationDestination(for: Route.self) { route in
@@ -33,9 +42,16 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
                 }
         }
         .sheet(
-            item: modalBinding(for: .sheet),
+            item: modalBinding(
+                for: .sheet,
+                presentationID: sheetPresentationID
+            ),
             onDismiss: {
-                presentationCoordinator.presentationDidDismiss(style: .sheet)
+                guard let sheetPresentationID else { return }
+                presentationCoordinator.presentationDidDismiss(
+                    id: sheetPresentationID,
+                    style: .sheet
+                )
             }
         ) { context in
             IRouterView(
@@ -48,9 +64,14 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
         }
         #if !os(macOS)
         .fullScreenCover(
-            item: modalBinding(for: .fullScreenCover),
+            item: modalBinding(
+                for: .fullScreenCover,
+                presentationID: coverPresentationID
+            ),
             onDismiss: {
+                guard let coverPresentationID else { return }
                 presentationCoordinator.presentationDidDismiss(
+                    id: coverPresentationID,
                     style: .fullScreenCover
                 )
             }
@@ -81,13 +102,16 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
     }
 
     private func modalBinding(
-        for style: IRouterModalStyle
+        for style: IRouterModalStyle,
+        presentationID: UUID?
     ) -> Binding<IRouterContext<Route>?> {
         Binding(
             get: { presentationCoordinator.context(for: style) },
             set: { context in
-                guard context == nil else { return }
+                guard context == nil,
+                      let presentationID else { return }
                 presentationCoordinator.bindingDidDismiss(
+                    id: presentationID,
                     style: style,
                     router: router
                 )

@@ -51,22 +51,32 @@ final class IRouterPresentationCoordinator<Route: Hashable & Sendable> {
         presentedContext?.style == style ? presentedContext : nil
     }
 
+    func presentationID(for style: IRouterModalStyle) -> UUID? {
+        if dismissing?.style == style {
+            return dismissing?.id
+        }
+        return context(for: style)?.id
+    }
+
     func bindingDidDismiss(
+        id: UUID,
         style: IRouterModalStyle,
         router: IRouter<Route>
     ) {
         guard dismissing == nil,
               let presentedContext,
+              presentedContext.id == id,
               presentedContext.style == style else { return }
-        dismissing = (presentedContext.id, style)
+        dismissing = (id, style)
         pendingContext = nil
         self.presentedContext = nil
         visibleID = nil
-        router.modalDidDismiss(id: presentedContext.id)
+        router.modalDidDismiss(id: id)
     }
 
-    func presentationDidDismiss(style: IRouterModalStyle) {
-        guard dismissing?.style == style else { return }
+    func presentationDidDismiss(id: UUID, style: IRouterModalStyle) {
+        guard dismissing?.id == id,
+              dismissing?.style == style else { return }
         dismissing = nil
         presentedContext = pendingContext
         pendingContext = nil
