@@ -41,6 +41,7 @@
 		BBBB000000000000000000B8 /* ModalDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B9 /* NestedDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NestedDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000BA /* MultipleRoutersDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleRoutersDemo.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000BB /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		CCCC000000000000000000B8 /* IRouterDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IRouterDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CCCC000000000000000000B9 /* IRouterDemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRouterDemoUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -76,6 +77,7 @@
 		BBBB000000000000000000D2 /* IRouterDemo */ = {
 			isa = PBXGroup;
 			children = (
+				BBBB000000000000000000BB /* Info-macOS.plist */,
 				BBBB000000000000000000B1 /* IRouterDemoApp.swift */,
 				BBBB000000000000000000B2 /* ContentView.swift */,
 				BBBB000000000000000000B3 /* DemoModel.swift */,
@@ -368,6 +370,8 @@
 				DEVELOPMENT_TEAM = 2Z83ZPSLB9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"GENERATE_INFOPLIST_FILE[sdk=macosx*]" = NO;
+				"INFOPLIST_FILE[sdk=macosx*]" = "IRouterDemo/Info-macOS.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -400,6 +404,8 @@
 				DEVELOPMENT_TEAM = 2Z83ZPSLB9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"GENERATE_INFOPLIST_FILE[sdk=macosx*]" = NO;
+				"INFOPLIST_FILE[sdk=macosx*]" = "IRouterDemo/Info-macOS.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

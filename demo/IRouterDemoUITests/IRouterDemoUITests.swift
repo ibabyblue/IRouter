@@ -1,17 +1,16 @@
 import XCTest
 
+@MainActor
 final class IRouterDemoUITests: XCTestCase {
     private var app: XCUIApplication!
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app = XCUIApplication()
-        app.launchArguments = ["-ui-testing"]
-        app.launch()
-        app.tabBars.buttons["demo.tab.modals"].tap()
     }
 
     func testChildRouterDismissesOwningSheet() {
+        launchApp()
+
         app.buttons["demo.modals.openSheetA"].tap()
         let modalA = app.collectionViews["demo.modal.A"]
         XCTAssertTrue(modalA.waitForExistence(timeout: 2))
@@ -23,6 +22,8 @@ final class IRouterDemoUITests: XCTestCase {
     }
 
     func testSheetToCoverReplacementIsSerialized() {
+        launchApp()
+
         app.buttons["demo.modals.openSheetA"].tap()
         let modalA = app.collectionViews["demo.modal.A"]
         XCTAssertTrue(modalA.waitForExistence(timeout: 2))
@@ -58,6 +59,8 @@ final class IRouterDemoUITests: XCTestCase {
     }
 
     func testRapidReplacementPresentsOnlyLatestContext() {
+        launchApp()
+
         app.buttons["demo.modals.openSheetA"].tap()
         XCTAssertTrue(app.collectionViews["demo.modal.A"].waitForExistence(timeout: 2))
 
@@ -85,6 +88,8 @@ final class IRouterDemoUITests: XCTestCase {
     }
 
     func testInteractiveDismissalClearsRouterInspector() {
+        launchApp()
+
         app.buttons["demo.modals.openSheetA"].tap()
         let modalA = app.collectionViews["demo.modal.A"]
         XCTAssertTrue(modalA.waitForExistence(timeout: 2))
@@ -93,6 +98,13 @@ final class IRouterDemoUITests: XCTestCase {
 
         XCTAssertTrue(waitForDisappearance(modalA))
         XCTAssertEqual(app.staticTexts["demo.state.modal"].label, "None")
+    }
+
+    private func launchApp() {
+        app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+        app.tabBars.buttons["demo.tab.modals"].tap()
     }
 
     private func waitForDisappearance(
