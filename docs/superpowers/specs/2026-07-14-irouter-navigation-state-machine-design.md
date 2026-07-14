@@ -267,22 +267,24 @@ Interactive SwiftUI dismissal reaches the same ID-checked router method. Program
 
 `IRouterView` maps desired router state to actual SwiftUI presentation through an internal, testable `IRouterPresentationCoordinator`.
 
-The coordinator maintains one active context and one optional pending context. Its effective phases are:
+The coordinator maintains one active context, its visibility acknowledgement, and one optional pending context. Its effective phases are:
 
 ```text
 idle
 presenting(active)
+replacingBeforeAppearance(active, replacement)
 dismissing(active, pending)
 ```
 
 Rules:
 
-- Desired nil while active starts dismissal.
-- Desired B while active A stores B as pending and first dismisses A.
+- Desired nil while visible active starts dismissal; before appearance it clears directly.
+- Desired B while visible active A stores B as pending and first dismisses A.
+- Modal content reports `presentationDidAppear(id:)`. If desired state changes before A actually appears, the coordinator replaces A directly because SwiftUI is not guaranteed to emit `onDismiss` for a presentation that never became visible.
 - Desired C while A is dismissing replaces pending B with C.
 - Desired nil while A is dismissing removes the pending context.
-- `onDismiss(A.id)` presents the latest pending context, if any.
-- An `onDismiss` callback for any ID other than the active dismissal is ignored.
+- The `onDismiss` for A's active dismissal presents the latest pending context, if any.
+- An `onDismiss` callback whose style does not match the active dismissal is ignored.
 - Interactive dismissal notifies the router using the dismissed context ID.
 
 The coordinator is a rendering adapter only. It never runs filters, creates routes, or changes navigation policy.
@@ -301,7 +303,7 @@ README and Demo must use buttons or commands that call router methods for forwar
 
 ## 10. Platform Behavior
 
-- Package manifest uses `swift-tools-version: 6.0`.
+- Package manifest uses `swift-tools-version: 6.0` and explicitly selects Swift language mode 6.
 - Minimum deployment targets remain iOS 17 and macOS 14.
 - Full-screen cover is supported only on iOS.
 - macOS cannot accumulate an invisible full-screen-cover context.
@@ -380,6 +382,7 @@ The first screen is the actual test surface, not a marketing or explanatory page
 
 - Idle to active and active to idle.
 - A to B waits for A's dismissal callback.
+- A replaced before its appearance acknowledgement switches directly to B and never waits for an `onDismiss` callback.
 - A to B to C retains only C as pending.
 - Pending presentation cancellation.
 - Stale callback rejection.
