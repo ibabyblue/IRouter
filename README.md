@@ -341,8 +341,8 @@ The state and navigation APIs are source-breaking. Apply these mappings:
 | `dedup: true` | `options: [.deduplicateTop]` |
 | `flush: true` | `options: [.dismissPresented]` |
 | `dismissAndPush(route)` | `push(route, options: [.dismissPresented])` |
-| `sheetContext` / `coverContext` | Read-only `modalContext` plus `style` |
-| Direct `path` mutation | Router navigation/pop APIs |
+| `sheetContext` / `coverContext` | Read-only `modalContext` and `style` |
+| Direct `path` mutation | Router navigation and pop APIs |
 
 Navigation now returns an `IRouterNavigationOutcome`, filters use a main-actor
 handler, modal state is hierarchical, and redirect failures are reported

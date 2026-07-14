@@ -27,5 +27,5 @@
 | `dedup: true` | `options: [.deduplicateTop]` |
 | `flush: true` | `options: [.dismissPresented]` |
 | `dismissAndPush(route)` | `push(route, options: [.dismissPresented])` |
-| `sheetContext` / `coverContext` | Read-only `modalContext` plus `style` |
-| Direct `path` mutation | Router navigation/pop APIs |
+| `sheetContext` / `coverContext` | Read-only `modalContext` and `style` |
+| Direct `path` mutation | Router navigation and pop APIs |
