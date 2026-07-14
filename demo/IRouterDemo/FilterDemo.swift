@@ -1,204 +1,132 @@
-//
-//  FilterDemo.swift
-//  IRouterDemo
-//
-//  Created by ibabyblue on 2026/05/11.
-//  Copyright © 2026 ibabyblue. All rights reserved.
-//
-
-import SwiftUI
 import IRouter
-
-// MARK: - ③ Filter Demo
+import SwiftUI
 
 struct FilterDemoView: View {
-    @State private var router = IRouter<AppRoute>(root: .home)
+    @State private var auth: DemoAuthState
+    @State private var router: IRouter<AppRoute>
+    @State private var latestOutcome = "No command yet"
+
+    init() {
+        let auth = DemoAuthState()
+        _auth = State(initialValue: auth)
+        _router = State(initialValue: IRouter(root: .home, filters: [
+            IRouterFilter { route, presentation in
+                switch route {
+                case .settings where !auth.isLoggedIn:
+                    .redirect(.login, .sheet)
+                case .blocked:
+                    .block
+                case .selfCycle:
+                    .redirect(.selfCycle, presentation)
+                case .cycleA:
+                    .redirect(.cycleB, presentation)
+                case .cycleB:
+                    .redirect(.cycleA, presentation)
+                default:
+                    .allow
+                }
+            },
+        ]))
+    }
 
     var body: some View {
         IRouterView(router: router) { route in
-            switch route {
-            case .home:     FilterMenuView()
-            case .a:        AllowFilterTestView()
-            case .b:        BlockFilterTestView()
-            case .c:        RedirectFilterTestView()
-            case .settings: ChainFilterTestView()
-            default:        EmptyView()
-            }
+            FilterLabView(
+                route: route,
+                auth: auth,
+                latestOutcome: $latestOutcome
+            )
         }
     }
 }
 
-// MARK: 菜单
-
-private struct FilterMenuView: View {
-    @Environment(IRouter<AppRoute>.self) var router
+private struct FilterLabView: View {
+    let route: AppRoute
+    @Bindable var auth: DemoAuthState
+    @Binding var latestOutcome: String
+    @Environment(IRouter<AppRoute>.self) private var router
 
     var body: some View {
-        List {
-            Button("Allow — push(.a) → 导航正常执行")        { router.push(.a) }
-            Button("Block — push(.b) → 导航被拦截")          { router.push(.b) }
-            Button("Redirect — push(.c) → 重定向到 sheet")   { router.push(.c) }
-            Button("Chain — push(.settings) → filter 链")    { router.push(.settings) }
-        }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Filter 测试")
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) { DismissButton() }
-        }
-    }
-}
-
-// MARK: Allow
-// 预期：filter 全部放行，push / sheet / dismiss 正常改变 state
-
-private struct AllowFilterTestView: View {
-    @State private var router = IRouter<AppRoute>(
-        root: .home,
-        filters: [IRouterFilter { _, _ in .allow }]
-    )
-
-    var body: some View {
-        List {
-            Section("State") {
-                RouterStateView(router: router)
+        DemoSectionContainer(title: "Filter Lab") {
+            Section("Current destination") {
+                DemoRouteHeader(
+                    route: route,
+                    detail: route == .login
+                        ? "Settings redirected here because authentication was off."
+                        : "Every command resolves synchronously through the filter chain.",
+                    accessibilityIdentifier: DemoAccessibility.stateCurrentRoute("demo.filters")
+                )
             }
-            Section("预期：操作正常执行") {
-                Button("push(.a)  → path = [a]")           { router.push(.a) }
-                Button("sheet(.login)  → sheetContext 设置") { router.sheet(.login) }
-                Button("dismiss()")                         { router.dismiss() }
-                Button("popToRoot()  → path = []")          { router.popToRoot() }
-            }
-        }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Allow Filter")
-    }
-}
 
-// MARK: Block
-// 预期：filter 全部拦截，state 始终不变
-
-private struct BlockFilterTestView: View {
-    @State private var router = IRouter<AppRoute>(
-        root: .home,
-        filters: [IRouterFilter { _, _ in .block }]
-    )
-
-    var body: some View {
-        List {
-            Section("State") {
-                RouterStateView(router: router)
-            }
-            Section("预期：state 始终不变") {
-                Button("push(.a)  → path 仍为 []")             { router.push(.a) }
-                Button("sheet(.login)  → sheetContext 仍为 nil") { router.sheet(.login) }
-                Button("fullScreenCover(.feed)  → cover 仍为 nil") { router.fullScreenCover(.feed) }
-            }
-        }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Block Filter")
-    }
-}
-
-// MARK: Redirect
-// 预期：push(.settings) 被重定向为 sheet(.login)；其他路由正常放行
-
-private struct RedirectFilterTestView: View {
-    @State private var router = IRouter<AppRoute>(
-        root: .home,
-        filters: [
-            IRouterFilter { route, _ in
-                if case .settings = route { return .redirect(.login, .sheet) }
-                return .allow
-            }
-        ]
-    )
-
-    var body: some View {
-        List {
-            Section("State") {
-                RouterStateView(router: router)
-            }
-            Section("预期") {
-                Button("push(.a)  → path = [a]，正常入栈") { router.push(.a) }
-                Button("push(.settings)  → redirect → sheetContext = login") {
-                    router.push(.settings)
+            Section("Authentication") {
+                Toggle(isOn: $auth.isLoggedIn) {
+                    Label("Logged in", systemImage: "person.crop.circle.badge.checkmark")
                 }
-                Button("dismiss()  → 关闭 sheet / pop") { router.dismiss() }
-                Button("popToRoot()") { router.popToRoot() }
+                .accessibilityIdentifier(DemoAccessibility.authToggle)
             }
-        }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Redirect Filter")
-    }
-}
 
-// MARK: Chain
-// 预期：push(.a) → filter1 allow → filter2 allow → 入栈
-//       push(.b) → filter1 block → filter2 不执行 → state 不变
-
-@Observable
-private final class ChainLog: @unchecked Sendable {
-    var entries: [String] = []
-    func append(_ s: String) { entries.append(s) }
-    func clear() { entries = [] }
-}
-
-private struct ChainFilterTestView: View {
-    @State private var log = ChainLog()
-    @State private var router = IRouter<AppRoute>(root: .home)
-
-    var body: some View {
-        List {
-            Section("State") {
-                RouterStateView(router: router)
+            Section("Router inspector") {
+                RouterInspector(
+                    router: router,
+                    latestOutcome: latestOutcome,
+                    accessibilityPrefix: "demo.filters"
+                )
             }
-            Section("Filter 执行日志") {
-                if log.entries.isEmpty {
-                    Text("（尚未操作）").foregroundStyle(.secondary)
+
+            Section("Filter outcomes") {
+                DemoCommandButton(
+                    "Allow detail",
+                    systemImage: "checkmark.circle",
+                    accessibilityIdentifier: DemoAccessibility.filterAllow
+                ) {
+                    latestOutcome = router.push(.detail(1)).displayText
                 }
-                ForEach(Array(log.entries.enumerated()), id: \.offset) { _, entry in
-                    Text(entry).font(.caption.monospaced())
+
+                DemoCommandButton(
+                    "Block route",
+                    systemImage: "hand.raised",
+                    accessibilityIdentifier: DemoAccessibility.filterBlock
+                ) {
+                    latestOutcome = router.push(.blocked).displayText
                 }
-                if !log.entries.isEmpty {
-                    Button("清空") { rebuild() }
+
+                DemoCommandButton(
+                    auth.isLoggedIn ? "Open settings" : "Redirect settings to login",
+                    systemImage: "arrow.triangle.turn.up.right.circle",
+                    accessibilityIdentifier: DemoAccessibility.filterSettings
+                ) {
+                    let outcome = router.push(.settings)
+                    latestOutcome = auth.isLoggedIn
+                        ? outcome.displayText
+                        : "settings as push -> \(outcome.displayText)"
+                }
+
+                DemoCommandButton(
+                    "Reject self redirect cycle",
+                    systemImage: "arrow.clockwise.circle",
+                    accessibilityIdentifier: DemoAccessibility.filterSelfCycle
+                ) {
+                    latestOutcome = router.push(.selfCycle).displayText
+                }
+
+                DemoCommandButton(
+                    "Reject two-node redirect cycle",
+                    systemImage: "arrow.triangle.2.circlepath",
+                    accessibilityIdentifier: DemoAccessibility.filterTwoNodeCycle
+                ) {
+                    latestOutcome = router.push(.cycleA).displayText
                 }
             }
-            Section("预期") {
-                Button("push(.a)  → f1 allow, f2 allow, path = [a]") {
-                    rebuild()
-                    router.push(.a)
-                }
-                Button("push(.b)  → f1 block, f2 不执行, path = []") {
-                    rebuild()
-                    router.push(.b)
+
+            Section("Dismiss") {
+                DemoCommandButton(
+                    "Dismiss current level",
+                    systemImage: "xmark.circle",
+                    accessibilityIdentifier: DemoAccessibility.filterDismiss
+                ) {
+                    latestOutcome = router.dismiss().displayText
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Filter Chain")
-        .onAppear { rebuild() }
-    }
-
-    private func rebuild() {
-        log.clear()
-        let log = log
-        router = IRouter<AppRoute>(
-            root: .home,
-            filters: [
-                IRouterFilter { route, _ in
-                    Task { @MainActor in log.append("filter1 called") }
-                    if case .b = route {
-                        Task { @MainActor in log.append("filter1 → .block (chain stops)") }
-                        return .block
-                    }
-                    Task { @MainActor in log.append("filter1 → .allow") }
-                    return .allow
-                },
-                IRouterFilter { _, _ in
-                    Task { @MainActor in log.append("filter2 called → .allow") }
-                    return .allow
-                },
-            ]
-        )
     }
 }

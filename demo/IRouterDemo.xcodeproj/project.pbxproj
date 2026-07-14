@@ -9,21 +9,27 @@
 /* Begin PBXBuildFile section */
 		BBBB000000000000000000A1 /* IRouterDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B1 /* IRouterDemoApp.swift */; };
 		BBBB000000000000000000A2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B2 /* ContentView.swift */; };
-		BBBB000000000000000000A3 /* BasicDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B3 /* BasicDemo.swift */; };
-		BBBB000000000000000000A4 /* FilterDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B4 /* FilterDemo.swift */; };
-		BBBB000000000000000000A5 /* FlushDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B5 /* FlushDemo.swift */; };
-		BBBB000000000000000000A6 /* TabDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B6 /* TabDemo.swift */; };
+		BBBB000000000000000000A3 /* DemoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B3 /* DemoModel.swift */; };
+		BBBB000000000000000000A4 /* DemoComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B4 /* DemoComponents.swift */; };
+		BBBB000000000000000000A5 /* StackDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B5 /* StackDemo.swift */; };
+		BBBB000000000000000000A6 /* FilterDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B6 /* FilterDemo.swift */; };
 		BBBB000000000000000000A7 /* IRouter in Frameworks */ = {isa = PBXBuildFile; productRef = BBBB000000000000000000F9 /* IRouter */; };
+		BBBB000000000000000000A8 /* ModalDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B8 /* ModalDemo.swift */; };
+		BBBB000000000000000000A9 /* NestedDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000B9 /* NestedDemo.swift */; };
+		BBBB000000000000000000AA /* MultipleRoutersDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB000000000000000000BA /* MultipleRoutersDemo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		BBBB000000000000000000B1 /* IRouterDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IRouterDemoApp.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		BBBB000000000000000000B3 /* BasicDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicDemo.swift; sourceTree = "<group>"; };
-		BBBB000000000000000000B4 /* FilterDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterDemo.swift; sourceTree = "<group>"; };
-		BBBB000000000000000000B5 /* FlushDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlushDemo.swift; sourceTree = "<group>"; };
-		BBBB000000000000000000B6 /* TabDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabDemo.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000B3 /* DemoModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoModel.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000B4 /* DemoComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoComponents.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000B5 /* StackDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackDemo.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000B6 /* FilterDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterDemo.swift; sourceTree = "<group>"; };
 		BBBB000000000000000000B7 /* IRouterDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IRouterDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBBB000000000000000000B8 /* ModalDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalDemo.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000B9 /* NestedDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NestedDemo.swift; sourceTree = "<group>"; };
+		BBBB000000000000000000BA /* MultipleRoutersDemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleRoutersDemo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,10 +57,13 @@
 			children = (
 				BBBB000000000000000000B1 /* IRouterDemoApp.swift */,
 				BBBB000000000000000000B2 /* ContentView.swift */,
-				BBBB000000000000000000B3 /* BasicDemo.swift */,
-				BBBB000000000000000000B4 /* FilterDemo.swift */,
-				BBBB000000000000000000B5 /* FlushDemo.swift */,
-				BBBB000000000000000000B6 /* TabDemo.swift */,
+				BBBB000000000000000000B3 /* DemoModel.swift */,
+				BBBB000000000000000000B4 /* DemoComponents.swift */,
+				BBBB000000000000000000B5 /* StackDemo.swift */,
+				BBBB000000000000000000B6 /* FilterDemo.swift */,
+				BBBB000000000000000000B8 /* ModalDemo.swift */,
+				BBBB000000000000000000B9 /* NestedDemo.swift */,
+				BBBB000000000000000000BA /* MultipleRoutersDemo.swift */,
 			);
 			path = IRouterDemo;
 			sourceTree = "<group>";
@@ -143,10 +152,13 @@
 			files = (
 				BBBB000000000000000000A1 /* IRouterDemoApp.swift in Sources */,
 				BBBB000000000000000000A2 /* ContentView.swift in Sources */,
-				BBBB000000000000000000A3 /* BasicDemo.swift in Sources */,
-				BBBB000000000000000000A4 /* FilterDemo.swift in Sources */,
-				BBBB000000000000000000A5 /* FlushDemo.swift in Sources */,
-				BBBB000000000000000000A6 /* TabDemo.swift in Sources */,
+				BBBB000000000000000000A3 /* DemoModel.swift in Sources */,
+				BBBB000000000000000000A4 /* DemoComponents.swift in Sources */,
+				BBBB000000000000000000A5 /* StackDemo.swift in Sources */,
+				BBBB000000000000000000A6 /* FilterDemo.swift in Sources */,
+				BBBB000000000000000000A8 /* ModalDemo.swift in Sources */,
+				BBBB000000000000000000A9 /* NestedDemo.swift in Sources */,
+				BBBB000000000000000000AA /* MultipleRoutersDemo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,7 +220,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
+				SDKROOT = auto;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -261,7 +273,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_FAST_MATH = YES;
-				SDKROOT = iphoneos;
+				SDKROOT = auto;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
@@ -284,6 +296,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -293,6 +306,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -313,6 +328,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -322,6 +338,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
