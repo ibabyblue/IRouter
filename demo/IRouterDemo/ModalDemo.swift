@@ -7,13 +7,18 @@ struct ModalDemoView: View {
 
     var body: some View {
         IRouterView(router: router) { route in
-            ModalLabView(route: route, latestOutcome: $latestOutcome)
+            ModalLabView(
+                route: route,
+                rootRouter: router,
+                latestOutcome: $latestOutcome
+            )
         }
     }
 }
 
 private struct ModalLabView: View {
     let route: AppRoute
+    let rootRouter: IRouter<AppRoute>
     @Binding var latestOutcome: String
     @Environment(IRouter<AppRoute>.self) private var router
 
@@ -22,9 +27,9 @@ private struct ModalLabView: View {
             Section("Current destination") {
                 DemoRouteHeader(
                     route: route,
-                    detail: route == .home
-                        ? "Present one modal through the router."
-                        : "This content is owned by the modal child router.",
+                    detail: isModalDestination
+                        ? "This content reads its child router from the environment."
+                        : "Run modal transactions through the owning root router.",
                     accessibilityIdentifier: modalIdentifier
                 )
 
@@ -34,50 +39,8 @@ private struct ModalLabView: View {
                     .accessibilityIdentifier(DemoAccessibility.modalState)
             }
 
-            Section("Router inspector") {
-                RouterInspector(
-                    router: router,
-                    latestOutcome: latestOutcome,
-                    accessibilityPrefix: "demo.modals"
-                )
-            }
-
-            if route == .home {
-                Section("Present") {
-                    DemoCommandButton(
-                        "Open sheet A",
-                        systemImage: "rectangle.bottomhalf.inset.filled",
-                        accessibilityIdentifier: DemoAccessibility.openSheetA
-                    ) {
-                        let options: IRouterNavigationOptions = []
-                        latestOutcome = router.sheet(
-                            .modal("A"),
-                            options: options
-                        ).displayText
-                    }
-
-                    DemoCommandButton(
-                        "Open cover B",
-                        systemImage: "rectangle.inset.filled",
-                        accessibilityIdentifier: DemoAccessibility.openCoverB
-                    ) {
-                        let options: IRouterNavigationOptions = []
-                        #if os(macOS)
-                        latestOutcome = router.navigate(
-                            to: .modal("B"),
-                            as: .fullScreenCover,
-                            options: options
-                        ).displayText
-                        #else
-                        latestOutcome = router.fullScreenCover(
-                            .modal("B"),
-                            options: options
-                        ).displayText
-                        #endif
-                    }
-                }
-            } else {
-                Section("Child router") {
+            if isModalDestination {
+                Section("Regression commands") {
                     DemoCommandButton(
                         "Dismiss current modal",
                         systemImage: "xmark",
@@ -86,27 +49,155 @@ private struct ModalLabView: View {
                     ) {
                         latestOutcome = router.dismiss().displayText
                     }
+
+                    #if !os(macOS)
+                    DemoCommandButton(
+                        "Replace with cover B",
+                        systemImage: "rectangle.inset.filled",
+                        accessibilityIdentifier: DemoAccessibility.replaceWithCoverB
+                    ) {
+                        latestOutcome = rootRouter.fullScreenCover(
+                            .modal("B"),
+                            options: [.dismissPresented]
+                        ).displayText
+                    }
+                    #endif
+
+                    DemoCommandButton(
+                        "Rapidly replace with B, then C",
+                        systemImage: "forward.end.alt",
+                        accessibilityIdentifier: DemoAccessibility.rapidReplaceABC
+                    ) {
+                        _ = rootRouter.sheet(
+                            .modal("B"),
+                            options: [.dismissPresented]
+                        )
+                        latestOutcome = rootRouter.sheet(
+                            .modal("C"),
+                            options: [.dismissPresented]
+                        ).displayText
+                    }
                 }
+
+                Section("Additional root commands") {
+                    DemoCommandButton(
+                        "Try second sheet without replacement",
+                        systemImage: "exclamationmark.rectangle.stack",
+                        accessibilityIdentifier: DemoAccessibility.rejectSecondModal
+                    ) {
+                        latestOutcome = rootRouter.sheet(.modal("B")).displayText
+                    }
+
+                    DemoCommandButton(
+                        "Replace with sheet B",
+                        systemImage: "rectangle.2.swap",
+                        accessibilityIdentifier: DemoAccessibility.replaceWithSheetB
+                    ) {
+                        latestOutcome = rootRouter.sheet(
+                            .modal("B"),
+                            options: [.dismissPresented]
+                        ).displayText
+                    }
+
+                    DemoCommandButton(
+                        "Replace modal with pushed detail",
+                        systemImage: "arrow.forward.to.line",
+                        accessibilityIdentifier: DemoAccessibility.replaceWithPush
+                    ) {
+                        latestOutcome = rootRouter.push(
+                            .detail(1),
+                            options: [.dismissPresented]
+                        ).displayText
+                    }
+                }
+
+                Section("Child router") {
+                    DemoCommandButton(
+                        "Push inside modal",
+                        systemImage: "arrow.forward.square",
+                        accessibilityIdentifier: DemoAccessibility.modalChildPush
+                    ) {
+                        latestOutcome = router.push(
+                            .detail(router.path.count + 1),
+                            options: [.deduplicateTop]
+                        ).displayText
+                    }
+                }
+            } else {
+                Section("Present") {
+                    DemoCommandButton(
+                        "Open sheet A",
+                        systemImage: "rectangle.bottomhalf.inset.filled",
+                        accessibilityIdentifier: DemoAccessibility.openSheetA
+                    ) {
+                        latestOutcome = rootRouter.sheet(.modal("A")).displayText
+                    }
+
+                    #if os(macOS)
+                    DemoCommandButton(
+                        "Try unsupported cover B",
+                        systemImage: "nosign",
+                        accessibilityIdentifier: DemoAccessibility.openCoverB
+                    ) {
+                        latestOutcome = rootRouter.navigate(
+                            to: .modal("B"),
+                            as: .fullScreenCover,
+                            options: [.dismissPresented]
+                        ).displayText
+                    }
+                    #else
+                    DemoCommandButton(
+                        "Open cover B",
+                        systemImage: "rectangle.inset.filled",
+                        accessibilityIdentifier: DemoAccessibility.openCoverB
+                    ) {
+                        latestOutcome = rootRouter.fullScreenCover(
+                            .modal("B"),
+                            options: [.dismissPresented]
+                        ).displayText
+                    }
+                    #endif
+                }
+            }
+
+            Section("Router inspector") {
+                RouterInspector(
+                    router: router,
+                    latestOutcome: latestOutcome,
+                    accessibilityPrefix: inspectorPrefix
+                )
             }
         }
     }
 
     private var modalIdentifier: String {
-        switch route {
+        switch presentedModalRoute {
         case .modal("A"): DemoAccessibility.modalA
         case .modal("B"): DemoAccessibility.modalB
         case .modal("C"): DemoAccessibility.modalC
-        default: DemoAccessibility.stateCurrentRoute("demo.modals")
+        default: DemoAccessibility.modalRoot
         }
     }
 
     private var currentModalText: String {
-        if let modalRoute = router.modalContext?.route {
+        if let modalRoute = rootRouter.modalContext?.route {
             return modalRoute.compactTitle
         }
-        if case .modal = route {
-            return route.compactTitle
+        return "None"
+    }
+
+    private var isModalDestination: Bool {
+        router !== rootRouter
+    }
+
+    private var presentedModalRoute: AppRoute {
+        isModalDestination ? router.root : route
+    }
+
+    private var inspectorPrefix: String {
+        if isModalDestination {
+            return "\(DemoAccessibility.modalInspectorPrefix).child"
         }
-        return "none"
+        return DemoAccessibility.modalInspectorPrefix
     }
 }

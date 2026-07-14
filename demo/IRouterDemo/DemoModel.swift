@@ -95,6 +95,20 @@ final class DemoAuthState {
     var isLoggedIn = false
 }
 
+@MainActor
+@Observable
+final class DemoOutcomeStore {
+    private var outcomes: [String: String] = [:]
+
+    func value(for key: String) -> String {
+        outcomes[key, default: "No command yet"]
+    }
+
+    func record(_ outcome: String, for key: String) {
+        outcomes[key] = outcome
+    }
+}
+
 extension Array where Element == AppRoute {
     var displayText: String {
         isEmpty ? "[]" : "[\(map(\.compactTitle).joined(separator: ", "))]"
@@ -190,23 +204,61 @@ enum DemoAccessibility {
 
     static let openSheetA = "demo.modals.openSheetA"
     static let openCoverB = "demo.modals.openCoverB"
+    static let rejectSecondModal = "demo.modals.rejectSecondModal"
+    static let replaceWithSheetB = "demo.modals.replaceWithSheetB"
     static let replaceWithCoverB = "demo.modals.replaceWithCoverB"
     static let rapidReplaceABC = "demo.modals.rapidReplaceABC"
+    static let replaceWithPush = "demo.modals.replaceWithPush"
+    static let modalChildPush = "demo.modal.childPush"
     static let modalA = "demo.modal.A"
     static let modalB = "demo.modal.B"
     static let modalC = "demo.modal.C"
+    static let modalRoot = "demo.modals.root"
     static let dismissCurrent = "demo.modal.dismissCurrent"
     static let modalState = "demo.state.modal"
+    static let modalInspectorPrefix = "demo.modals"
 
     static let nestedOpenChild = "demo.nested.openChild"
     static let nestedPush = "demo.nested.push"
     static let nestedPop = "demo.nested.pop"
     static let nestedDismiss = "demo.nested.dismiss"
+    static let nestedRoot = "demo.nested.root"
+
+    static func nestedLevelRoot(_ level: Int) -> String {
+        "demo.nested.level\(level)"
+    }
+
+    static func nestedInspectorPrefix(_ level: Int) -> String {
+        "demo.nested.level\(level)"
+    }
+
+    static func nestedOpenNext(_ level: Int) -> String {
+        "demo.nested.level\(level).openNext"
+    }
+
+    static func nestedPush(_ level: Int) -> String {
+        "demo.nested.level\(level).push"
+    }
+
+    static func nestedDismiss(_ level: Int) -> String {
+        "demo.nested.level\(level).dismiss"
+    }
 
     static let routerAPush = "demo.multiple.routerA.push"
     static let routerAPop = "demo.multiple.routerA.pop"
     static let routerBPush = "demo.multiple.routerB.push"
     static let routerBPop = "demo.multiple.routerB.pop"
+    static let multipleRoot = "demo.multiple.root"
+    static let multipleTargetPicker = "demo.multiple.targetPicker"
+    static let multipleRouterAOption = "demo.multiple.target.routerA"
+    static let multipleRouterBOption = "demo.multiple.target.routerB"
+    static let multipleSelectedState = "demo.multiple.state.selected"
+    static let multiplePush = "demo.multiple.push"
+    static let multiplePresent = "demo.multiple.present"
+    static let multiplePop = "demo.multiple.pop"
+    static let multipleDismiss = "demo.multiple.dismiss"
+    static let multipleRouterAPrefix = "demo.multiple.routerA"
+    static let multipleRouterBPrefix = "demo.multiple.routerB"
 
     static func statePath(_ prefix: String) -> String { "\(prefix).state.path" }
     static func stateModalRoute(_ prefix: String) -> String { "\(prefix).state.modalRoute" }
