@@ -1,59 +1,36 @@
 # IRouter
 
-A pure SwiftUI routing library for iOS 17+ and macOS 14+. Type-safe navigation for Push, Sheet, and FullScreenCover — with a built-in filter chain, dedup, and flush mode. Zero third-party dependencies.
-
-![iOS 17+](https://img.shields.io/badge/iOS-17%2B-blue)
-![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
-![Swift 6](https://img.shields.io/badge/Swift-6.0-orange)
-![SPM](https://img.shields.io/badge/SPM-compatible-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
-
-## Features
-
-- **Type-safe routes** — navigation targets are plain `Hashable & Sendable` enum cases; no stringly-typed paths
-- **Three presentation modes** — Push (`NavigationStack`), Sheet, and FullScreenCover from a single unified API
-- **Filter chain** — intercept any navigation before it executes; allow, block, or redirect to another route
-- **Dedup & Flush** — skip duplicate push targets; clear all modals in one call for deep links and push notifications
-- **Nested navigation** — each Sheet / FullScreenCover owns an independent child router with its own stack, inheriting the parent's filters
-- **SwiftUI-native** — `@Observable`, `@MainActor`, zero UIKit, zero third-party dependencies
+IRouter is a SwiftUI router for typed stack and modal navigation.
 
 ## Requirements
 
-| | Minimum |
+| Toolchain or platform | Minimum |
 |---|---|
 | iOS | 17.0 |
 | macOS | 14.0 |
 | Swift | 6.0 |
-| Xcode | 16.3 |
-
-> **Note:** FullScreenCover is not available on macOS. Push and Sheet work on both platforms.
+| Xcode | 16.x |
 
 ## Installation
 
-### Swift Package Manager
+In Xcode, choose **File > Add Package Dependencies** and enter:
 
-In Xcode choose **File → Add Package Dependencies**, enter the repository URL, or add to `Package.swift` directly:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/ibabyblue/IRouter", from: "0.0.4")
-],
-targets: [
-    .target(
-        name: "YourTarget",
-        dependencies: [
-            .product(name: "IRouter", package: "IRouter")
-        ]
-    )
-]
+```text
+https://github.com/ibabyblue/IRouter.git
 ```
+
+The transactional API documented below is currently listed under
+`Unreleased` in the changelog. Before it is tagged, pin integrations to a
+reviewed commit.
 
 ## Quick Start
 
+Routes must conform to both `Hashable` and `Sendable`.
+
 ```swift
 import IRouter
+import SwiftUI
 
-// 1. Define routes
 enum AppRoute: Hashable, Sendable {
     case home
     case detail(id: String)
@@ -61,71 +38,122 @@ enum AppRoute: Hashable, Sendable {
     case login
 }
 
-// 2. Create router (with optional filter)
-@State var router = IRouter<AppRoute>(
-    root: .home,
-    filters: [
+@MainActor
+struct AppRoot: View {
+    @State private var router = IRouter<AppRoute>(root: .home)
+
+    var body: some View {
+        IRouterView(router: router) { route in
+            switch route {
+            case .home:
+                HomeView()
+            case .detail(let id):
+                Text("Detail \(id)")
+            case .settings:
+                Text("Settings")
+            case .login:
+                Text("Login")
+            }
+        }
+    }
+}
+
+@MainActor
+struct HomeView: View {
+    @Environment(IRouter<AppRoute>.self) private var router
+
+    var body: some View {
+        VStack {
+            Button("Detail") {
+                router.push(.detail(id: "42"), options: [.deduplicateTop])
+            }
+            Button("Settings") {
+                router.push(.settings, options: [.dismissPresented])
+            }
+        }
+    }
+}
+```
+
+`IRouter`, its observable state, navigation methods, and filter handlers are
+main-actor isolated. An authentication filter can therefore read an
+`@MainActor` model synchronously:
+
+```swift
+import IRouter
+import Observation
+
+@MainActor
+@Observable
+final class AuthModel {
+    var isLoggedIn = false
+}
+
+@MainActor
+func makeRouter(auth: AuthModel) -> IRouter<AppRoute> {
+    IRouter(root: .home, filters: [
         IRouterFilter { route, _ in
-            if case .settings = route, !Auth.isLoggedIn {
+            if case .settings = route, !auth.isLoggedIn {
                 return .redirect(.login, .sheet)
             }
             return .allow
-        }
-    ]
-)
-
-// 3. Place IRouterView at the root of your scene
-IRouterView(router: router) { route in
-    switch route {
-    case .home:           HomeView()
-    case .detail(let id): DetailView(id: id)
-    case .settings:       SettingsView()
-    case .login:          LoginView()
-    }
-}
-
-// 4. Navigate from any child view via @Environment
-struct HomeView: View {
-    @Environment(IRouter<AppRoute>.self) var router
-
-    var body: some View {
-        Button("Detail") { router.push(.detail(id: "42")) }
-        Button("Settings") { router.push(.settings) }
-    }
+        },
+    ])
 }
 ```
 
-## API Reference
+Filters run in registration order. The first `.block` or `.redirect` stops
+that pass; a redirect starts filtering again from the first filter.
 
-### IRouter
+## Public API
+
+### Router and View
 
 ```swift
-@MainActor @Observable
+@MainActor
+@Observable
 public final class IRouter<Route: Hashable & Sendable> {
     public let root: Route
-    public var path: [Route]
-    public var sheetContext: IRouterContext<Route>?
-    public var coverContext: IRouterContext<Route>?
+    public private(set) var path: [Route]
+    public private(set) var modalContext: IRouterContext<Route>?
 
     public init(root: Route, filters: [IRouterFilter<Route>] = [])
 
-    // Stack
-    public func push(_ route: Route, dedup: Bool = false, flush: Bool = false)
-    public func pop()
-    public func popToRoot()
+    public func navigate(
+        to route: Route,
+        as presentation: IRouterPresentation,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route>
 
-    // Modal
-    public func sheet(_ route: Route, flush: Bool = false)
-    public func fullScreenCover(_ route: Route, flush: Bool = false)
-    public func dismiss()
-    public func dismissAndPush(_ route: Route)
+    public func push(
+        _ route: Route,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route>
+
+    public func sheet(
+        _ route: Route,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route>
+
+    @available(
+        macOS,
+        unavailable,
+        message: "Full-screen cover is unavailable on macOS"
+    )
+    public func fullScreenCover(
+        _ route: Route,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route>
+
+    public func pop() -> Bool
+    public func popToRoot() -> Bool
+    public func dismiss() -> IRouterDismissOutcome
 }
-```
 
-### IRouterView
-
-```swift
-public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
+public struct IRouterView<
+    Route: Hashable & Sendable,
+    Content: View
+>: View {
     public init(
         router: IRouter<Route>,
         @ViewBuilder destination: @escaping (Route) -> Content
@@ -133,22 +161,75 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
 }
 ```
 
-Wraps a `NavigationStack` and drives `.sheet` / `.fullScreenCover` from the router state. Injects the router into the environment so any child view can access it via `@Environment`.
+`path` and `modalContext` are read-only outside the package. Use router
+navigation and pop methods to change them. `pop()` and `popToRoot()` return
+`true` only when they mutate the stack.
 
-### IRouterContext
+### Presentation Values
 
 ```swift
+public enum IRouterPresentation: Hashable, Sendable {
+    case push
+    case sheet
+    case fullScreenCover
+}
+
+public enum IRouterModalStyle: Hashable, Sendable {
+    case sheet
+    case fullScreenCover
+}
+
+public struct IRouterDestination<
+    Route: Hashable & Sendable
+>: Hashable, Sendable {
+    public let route: Route
+    public let presentation: IRouterPresentation
+
+    public init(route: Route, presentation: IRouterPresentation)
+}
+
 @MainActor
-public final class IRouterContext<Route: Hashable & Sendable>: Identifiable {
+public final class IRouterContext<
+    Route: Hashable & Sendable
+>: Identifiable {
     public let id: UUID
     public let route: Route
+    public let style: IRouterModalStyle
     public let childRouter: IRouter<Route>
 }
 ```
 
-Created internally when a Sheet or FullScreenCover is presented. `childRouter` drives the modal's own independent navigation stack and inherits the parent's filter array.
+Each router can own at most one direct modal. Its `modalContext` records the
+modal route and `style`; the context's `childRouter` owns the modal's stack and
+may in turn present one direct modal. Child routers inherit the complete filter
+array from their parent.
 
-### IRouterFilter
+### Options
+
+```swift
+public struct IRouterNavigationOptions: OptionSet, Hashable, Sendable {
+    public let rawValue: Int
+
+    public init(rawValue: Int)
+
+    public static let deduplicateTop: Self
+    public static let dismissPresented: Self
+}
+```
+
+| Option | Behavior |
+|---|---|
+| `.deduplicateTop` | For a final push destination, return `.deduplicated` instead of appending when the route already matches `path.last`. It has no effect on modal destinations. |
+| `.dismissPresented` | For a committed final push, dismiss the router's direct modal before appending. For a final modal destination, replace the current direct modal. |
+
+Options apply to the final route and presentation after all redirects, not to
+the originally requested destination. A blocked or rejected transaction does
+not dismiss an existing modal or otherwise partially mutate router state.
+For a final push, `.deduplicateTop` is evaluated first; a `.deduplicated`
+outcome leaves both the path and any direct modal unchanged.
+Without `.dismissPresented`, presenting a second direct modal is rejected.
+
+### Filters
 
 ```swift
 public struct IRouterFilter<Route: Hashable & Sendable>: Sendable {
@@ -157,115 +238,122 @@ public struct IRouterFilter<Route: Hashable & Sendable>: Sendable {
         case block
         case redirect(Route, IRouterPresentation)
     }
-    public init(_ handler: @Sendable @escaping (Route, IRouterPresentation) -> Result)
+
+    public init(
+        _ handler: @MainActor @Sendable @escaping
+            (Route, IRouterPresentation) -> Result
+    )
 }
 ```
 
-Filters run in registration order before every navigation call. The first `.block` or `.redirect` terminates the chain. A redirected route re-enters the same filter chain from the top.
+Redirects are resolved iteratively. Repeating a route-presentation pair is
+rejected as a cycle. At most 32 redirects are followed; the 33rd redirect is
+rejected with the full attempted chain and limit.
 
-### IRouterPresentation
+### Outcomes and Failures
 
 ```swift
-public enum IRouterPresentation: Sendable {
-    case push
-    case sheet
-    case fullScreenCover
+public enum IRouterNavigationOutcome<
+    Route: Hashable & Sendable
+>: Hashable, Sendable {
+    case committed(IRouterDestination<Route>)
+    case blocked(IRouterDestination<Route>)
+    case deduplicated(IRouterDestination<Route>)
+    case rejected(IRouterNavigationFailure<Route>)
+}
+
+public enum IRouterNavigationFailure<
+    Route: Hashable & Sendable
+>: Hashable, Sendable {
+    case redirectCycle(chain: [IRouterDestination<Route>])
+    case redirectLimitExceeded(
+        chain: [IRouterDestination<Route>],
+        limit: Int
+    )
+    case modalAlreadyPresented(current: IRouterDestination<Route>)
+    case unsupportedPresentation(IRouterPresentation)
 }
 ```
 
-## Navigation Parameters
-
-| Parameter | Default | Description |
-|---|---|---|
-| `dedup` | `false` | Skip push if the route equals the current stack top |
-| `flush` | `false` | Dismiss all modals before navigating — useful for deep links and push notifications |
-
-## Filter Examples
-
-### Login guard
-
-```swift
-IRouterFilter { route, _ in
-    if case .profile = route, !Auth.isLoggedIn {
-        return .redirect(.login, .sheet)
-    }
-    return .allow
-}
-```
-
-### Block during loading
-
-```swift
-IRouterFilter { [weak self] _, _ in
-    self?.isLoading == true ? .block : .allow
-}
-```
-
-### Analytics logging
-
-```swift
-IRouterFilter { route, presentation in
-    Analytics.track(route: route, via: presentation)
-    return .allow
-}
-```
-
-## Multi-Tab Setup
-
-Each tab gets its own `IRouter` instance; they share no state by default:
-
-```swift
-struct RootView: View {
-    @State var tabARouter = IRouter<AppRoute>(root: .home)
-    @State var tabBRouter = IRouter<AppRoute>(root: .feed)
-
-    var body: some View {
-        TabView {
-            IRouterView(router: tabARouter) { ... }
-                .tabItem { Label("Home", systemImage: "house") }
-            IRouterView(router: tabBRouter) { ... }
-                .tabItem { Label("Feed", systemImage: "list.bullet") }
-        }
-    }
-}
-```
-
-## Edge-Case Behavior
-
-| Scenario | Behavior |
+| Outcome | Meaning |
 |---|---|
-| `pop()` on empty stack | No-op |
-| `dismiss()` with cover + sheet | Dismisses cover first; sheet on next call; pops last stack item if no modals remain |
-| `dedup: true` with matching stack top | Push is ignored |
-| `flush: true` | Clears all modals before navigating |
-| Filter `.redirect` | Terminates current chain; redirect target re-enters filters from the top |
-| Sheet / cover navigation | Each gets its own `childRouter` that inherits parent filters |
+| `.committed(destination)` | The final destination was applied. |
+| `.blocked(destination)` | A filter blocked that destination; state is unchanged. |
+| `.deduplicated(destination)` | A final push matched the current top route; state is unchanged. |
+| `.rejected(failure)` | A routing invariant or platform rule rejected the transaction; state is unchanged. |
 
-## Design Notes
+| Failure | Meaning |
+|---|---|
+| `.redirectCycle(chain:)` | Redirect resolution revisited a route-presentation pair. |
+| `.redirectLimitExceeded(chain:limit:)` | Redirect resolution attempted more than 32 redirects. |
+| `.modalAlreadyPresented(current:)` | The router already owns a direct modal and replacement was not requested. |
+| `.unsupportedPresentation(presentation)` | The resolved presentation is unavailable on the current platform. |
 
-- `IRouter` is `@Observable` and `@MainActor`. Changes to `path`, `sheetContext`, and `coverContext` drive SwiftUI updates automatically.
-- `IRouterView` binds a `NavigationStack` to `router.path`. Sheet and cover are driven by `.sheet(item:)` / `.fullScreenCover(item:)` bound to the context optionals — SwiftUI handles dismissal via binding, keeping state in sync without manual cleanup.
-- Each sheet or cover creates an `IRouterContext` that owns a child `IRouter` with its own `path`. The child router inherits the parent's filter array, so guards and analytics apply uniformly across the whole hierarchy.
-- The filter chain runs synchronously before every navigation call. Results are evaluated in order; the first non-`.allow` result short-circuits the rest. Redirected routes re-enter the chain from the top, preventing filter bypass.
-- `dismissAndPush` clears all modals first, then calls `push`, which runs the filter chain normally.
+### Dismissal
+
+```swift
+public enum IRouterDismissOutcome: Hashable, Sendable {
+    case dismissedPresentedModal
+    case popped
+    case dismissedFromParent
+    case unchanged
+}
+```
+
+`dismiss()` performs exactly the first applicable step:
+
+1. Remove the receiver's direct modal and return `.dismissedPresentedModal`.
+2. Otherwise pop the receiver's top path element and return `.popped`.
+3. Otherwise, for a child router, dismiss its owning parent modal and return `.dismissedFromParent`.
+4. Otherwise leave state unchanged and return `.unchanged`.
+
+A stale child router cannot dismiss a newer replacement modal.
+
+## SwiftUI Behavior
+
+`IRouterView` owns the `NavigationStack`, injects its router through the SwiftUI
+environment, and presents the router's modal content with the context's child
+router.
+
+Modal replacement is serialized against SwiftUI presentation callbacks. If a
+visible modal is replaced with `.dismissPresented`, the current presentation
+finishes dismissing before the replacement is presented. Rapid replacements
+coalesce to the latest requested context, and stale callbacks cannot clear a
+newer presentation.
+
+The stack binding accepts only path contraction that preserves the existing
+prefix. System back buttons, system pop gestures, and interactive modal
+dismissal therefore synchronize router state. Forward navigation through
+`NavigationLink(value:)` is unsupported because it attempts to grow the bound
+path outside the router transaction APIs; use `push`, `sheet`, or
+`fullScreenCover` instead.
+
+On macOS, `fullScreenCover(_:)` is unavailable at compile time. A dynamic call
+through `navigate(to:as:options:)` with `.fullScreenCover` compiles but returns
+`.rejected(.unsupportedPresentation(.fullScreenCover))` without mutation.
+
+## Migration From 0.0.4
+
+The state and navigation APIs are source-breaking. Apply these mappings:
+
+| 0.0.4 | New API |
+|---|---|
+| `dedup: true` | `options: [.deduplicateTop]` |
+| `flush: true` | `options: [.dismissPresented]` |
+| `dismissAndPush(route)` | `push(route, options: [.dismissPresented])` |
+| `sheetContext` / `coverContext` | Read-only `modalContext` plus `style` |
+| Direct `path` mutation | Router navigation/pop APIs |
+
+Navigation now returns an `IRouterNavigationOutcome`, filters use a main-actor
+handler, modal state is hierarchical, and redirect failures are reported
+instead of recursing indefinitely.
 
 ## Demo
 
-Open `demo/IRouterDemo.xcodeproj`, select a simulator and run. Covers four scenarios:
-
-- **Basic** — push / pop / popToRoot, sheet, fullScreenCover, live state display
-- **Filter** — allow / block / redirect / chain, with a live filter execution log
-- **Flush** — deep link and push notification simulation using `flush: true`
-- **Tab** — two independent routers in a `TabView`
-
-## Out of Scope
-
-- URL / deep link parsing (handle in `onOpenURL`, pass result to `push` / `sheet`)
-- Alert / ConfirmationDialog (local UI state, not navigation destinations)
-- Custom transition animations
-- tvOS / watchOS
-- Back-gesture interception
+Open `demo/IRouterDemo.xcodeproj` to exercise stack transactions, filter
+outcomes and redirect failures, modal replacement, nested child routers, and
+independent router instances.
 
 ## License
 
-IRouter is available under the MIT license. See the [LICENSE](LICENSE) file for details.
+IRouter is available under the MIT license. See [LICENSE](LICENSE).
