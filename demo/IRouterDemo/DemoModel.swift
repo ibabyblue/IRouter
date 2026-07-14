@@ -218,6 +218,10 @@ enum DemoAccessibility {
     static let modalState = "demo.state.modal"
     static let modalInspectorPrefix = "demo.modals"
 
+    static func modalHeader(_ modalIdentifier: String) -> String {
+        "\(modalIdentifier).header"
+    }
+
     static let nestedOpenChild = "demo.nested.openChild"
     static let nestedPush = "demo.nested.push"
     static let nestedPop = "demo.nested.pop"

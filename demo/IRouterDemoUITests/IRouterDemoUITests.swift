@@ -13,7 +13,7 @@ final class IRouterDemoUITests: XCTestCase {
 
     func testChildRouterDismissesOwningSheet() {
         app.buttons["demo.modals.openSheetA"].tap()
-        let modalA = app.otherElements["demo.modal.A"]
+        let modalA = app.collectionViews["demo.modal.A"]
         XCTAssertTrue(modalA.waitForExistence(timeout: 2))
 
         app.buttons["demo.modal.dismissCurrent"].tap()
@@ -24,28 +24,69 @@ final class IRouterDemoUITests: XCTestCase {
 
     func testSheetToCoverReplacementIsSerialized() {
         app.buttons["demo.modals.openSheetA"].tap()
-        let modalA = app.otherElements["demo.modal.A"]
+        let modalA = app.collectionViews["demo.modal.A"]
         XCTAssertTrue(modalA.waitForExistence(timeout: 2))
 
         app.buttons["demo.modals.replaceWithCoverB"].tap()
 
-        XCTAssertTrue(waitForDisappearance(modalA))
-        XCTAssertTrue(app.otherElements["demo.modal.B"].waitForExistence(timeout: 2))
+        let modalB = app.collectionViews["demo.modal.B"]
+        let finalState = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate { _, _ in !modalA.exists },
+            NSPredicate { _, _ in modalB.exists },
+        ])
+        let finalStateReached = XCTNSPredicateExpectation(
+            predicate: finalState,
+            object: app as Any
+        )
+        let overlappingState = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate { _, _ in modalA.exists },
+            NSPredicate { _, _ in modalB.exists },
+        ])
+        let overlappingStateReached = XCTNSPredicateExpectation(
+            predicate: overlappingState,
+            object: app as Any
+        )
+        overlappingStateReached.isInverted = true
+        let result = XCTWaiter.wait(
+            for: [finalStateReached, overlappingStateReached],
+            timeout: 2
+        )
+
+        XCTAssertEqual(result, .completed)
+        XCTAssertFalse(modalA.exists)
+        XCTAssertTrue(modalB.exists)
     }
 
     func testRapidReplacementPresentsOnlyLatestContext() {
         app.buttons["demo.modals.openSheetA"].tap()
-        XCTAssertTrue(app.otherElements["demo.modal.A"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.collectionViews["demo.modal.A"].waitForExistence(timeout: 2))
 
         app.buttons["demo.modals.rapidReplaceABC"].tap()
 
-        XCTAssertFalse(app.otherElements["demo.modal.B"].waitForExistence(timeout: 0.5))
-        XCTAssertTrue(app.otherElements["demo.modal.C"].waitForExistence(timeout: 2))
+        let modalB = app.collectionViews["demo.modal.B"]
+        let modalBExists = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == true"),
+            object: modalB
+        )
+        modalBExists.isInverted = true
+        let modalC = app.collectionViews["demo.modal.C"]
+        let modalCExists = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == true"),
+            object: modalC
+        )
+        let result = XCTWaiter.wait(
+            for: [modalCExists, modalBExists],
+            timeout: 2
+        )
+
+        XCTAssertEqual(result, .completed)
+        XCTAssertTrue(modalC.exists)
+        XCTAssertFalse(modalB.exists)
     }
 
     func testInteractiveDismissalClearsRouterInspector() {
         app.buttons["demo.modals.openSheetA"].tap()
-        let modalA = app.otherElements["demo.modal.A"]
+        let modalA = app.collectionViews["demo.modal.A"]
         XCTAssertTrue(modalA.waitForExistence(timeout: 2))
 
         modalA.swipeDown(velocity: .fast)

@@ -30,7 +30,7 @@ private struct ModalLabView: View {
                     detail: isModalDestination
                         ? "This content reads its child router from the environment."
                         : "Run modal transactions through the owning root router.",
-                    accessibilityIdentifier: modalIdentifier
+                    accessibilityIdentifier: DemoAccessibility.modalHeader(modalIdentifier)
                 )
 
                 Text(currentModalText)
@@ -168,6 +168,8 @@ private struct ModalLabView: View {
                 )
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier(modalIdentifier)
     }
 
     private var modalIdentifier: String {
