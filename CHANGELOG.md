@@ -21,3 +21,11 @@
 - Expanded the test matrix for navigation values, stack contraction, filters,
   redirects, modal transactions, hierarchical dismissal, presentation
   serialization, and live Demo presentation flows.
+
+| 0.0.4 | New API |
+|---|---|
+| `dedup: true` | `options: [.deduplicateTop]` |
+| `flush: true` | `options: [.dismissPresented]` |
+| `dismissAndPush(route)` | `push(route, options: [.dismissPresented])` |
+| `sheetContext` / `coverContext` | Read-only `modalContext` plus `style` |
+| Direct `path` mutation | Router navigation/pop APIs |
