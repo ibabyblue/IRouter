@@ -85,6 +85,23 @@ public final class IRouter<Route: Hashable & Sendable> {
     }
 
     @discardableResult
+    public func sheet(
+        _ route: Route,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route> {
+        navigate(to: route, as: .sheet, options: options)
+    }
+
+    @available(macOS, unavailable, message: "Full-screen cover is unavailable on macOS")
+    @discardableResult
+    public func fullScreenCover(
+        _ route: Route,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route> {
+        navigate(to: route, as: .fullScreenCover, options: options)
+    }
+
+    @discardableResult
     public func pop() -> Bool {
         guard !path.isEmpty else { return false }
         path.removeLast()
@@ -96,6 +113,32 @@ public final class IRouter<Route: Hashable & Sendable> {
         guard !path.isEmpty else { return false }
         path.removeAll()
         return true
+    }
+
+    @discardableResult
+    public func dismiss() -> IRouterDismissOutcome {
+        if modalContext != nil {
+            modalContext = nil
+            return .dismissedPresentedModal
+        }
+        if pop() {
+            return .popped
+        }
+        if dismissFromParent?() == true {
+            return .dismissedFromParent
+        }
+        return .unchanged
+    }
+
+    @discardableResult
+    func dismissModal(id: UUID) -> Bool {
+        guard modalContext?.id == id else { return false }
+        modalContext = nil
+        return true
+    }
+
+    func modalDidDismiss(id: UUID) {
+        _ = dismissModal(id: id)
     }
 
     @discardableResult
@@ -111,16 +154,56 @@ public final class IRouter<Route: Hashable & Sendable> {
         _ destination: IRouterDestination<Route>,
         options: IRouterNavigationOptions
     ) -> IRouterNavigationOutcome<Route> {
-        guard destination.presentation == .push else {
-            return .rejected(.unsupportedPresentation(destination.presentation))
+        #if os(macOS)
+        if destination.presentation == .fullScreenCover {
+            return .rejected(.unsupportedPresentation(.fullScreenCover))
         }
-        if options.contains(.deduplicateTop), path.last == destination.route {
-            return .deduplicated(destination)
+        #endif
+
+        switch destination.presentation {
+        case .push:
+            if options.contains(.deduplicateTop), path.last == destination.route {
+                return .deduplicated(destination)
+            }
+            if options.contains(.dismissPresented) {
+                modalContext = nil
+            }
+            path.append(destination.route)
+            return .committed(destination)
+
+        case .sheet:
+            return commitModal(destination, style: .sheet, options: options)
+
+        case .fullScreenCover:
+            return commitModal(
+                destination,
+                style: .fullScreenCover,
+                options: options
+            )
         }
-        if options.contains(.dismissPresented) {
-            modalContext = nil
+    }
+
+    private func commitModal(
+        _ destination: IRouterDestination<Route>,
+        style: IRouterModalStyle,
+        options: IRouterNavigationOptions
+    ) -> IRouterNavigationOutcome<Route> {
+        if let current = modalContext,
+           !options.contains(.dismissPresented) {
+            return .rejected(.modalAlreadyPresented(
+                current: IRouterDestination(
+                    route: current.route,
+                    presentation: current.style.presentation
+                )
+            ))
         }
-        path.append(destination.route)
+
+        modalContext = IRouterContext(
+            route: destination.route,
+            style: style,
+            filters: filters,
+            parent: self
+        )
         return .committed(destination)
     }
 
