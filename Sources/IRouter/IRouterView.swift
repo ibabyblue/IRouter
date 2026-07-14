@@ -10,6 +10,8 @@ import SwiftUI
 
 public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
     @Bindable private var router: IRouter<Route>
+    @State private var presentationCoordinator:
+        IRouterPresentationCoordinator<Route>
     private let destination: (Route) -> Content
 
     public init(
@@ -17,6 +19,9 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
         @ViewBuilder destination: @escaping (Route) -> Content
     ) {
         _router = Bindable(router)
+        _presentationCoordinator = State(
+            initialValue: IRouterPresentationCoordinator()
+        )
         self.destination = destination
     }
 
@@ -27,6 +32,44 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
                     destination(route)
                 }
         }
+        .sheet(
+            item: modalBinding(for: .sheet),
+            onDismiss: {
+                presentationCoordinator.presentationDidDismiss(style: .sheet)
+            }
+        ) { context in
+            IRouterView(
+                router: context.childRouter,
+                destination: destination
+            )
+            .onAppear {
+                presentationCoordinator.presentationDidAppear(id: context.id)
+            }
+        }
+        #if !os(macOS)
+        .fullScreenCover(
+            item: modalBinding(for: .fullScreenCover),
+            onDismiss: {
+                presentationCoordinator.presentationDidDismiss(
+                    style: .fullScreenCover
+                )
+            }
+        ) { context in
+            IRouterView(
+                router: context.childRouter,
+                destination: destination
+            )
+            .onAppear {
+                presentationCoordinator.presentationDidAppear(id: context.id)
+            }
+        }
+        #endif
+        .onAppear {
+            presentationCoordinator.reconcile(desired: router.modalContext)
+        }
+        .onChange(of: router.modalContext?.id) {
+            presentationCoordinator.reconcile(desired: router.modalContext)
+        }
         .environment(router)
     }
 
@@ -34,6 +77,21 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
         Binding(
             get: { router.path },
             set: { _ = router.synchronizePathFromUI($0) }
+        )
+    }
+
+    private func modalBinding(
+        for style: IRouterModalStyle
+    ) -> Binding<IRouterContext<Route>?> {
+        Binding(
+            get: { presentationCoordinator.context(for: style) },
+            set: { context in
+                guard context == nil else { return }
+                presentationCoordinator.bindingDidDismiss(
+                    style: style,
+                    router: router
+                )
+            }
         )
     }
 }
