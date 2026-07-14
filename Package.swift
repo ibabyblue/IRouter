@@ -1,11 +1,4 @@
-// swift-tools-version: 6.2
-//
-//  Package.swift
-//  IRouter
-//
-//  Created by ibabyblue on 2026/05/11.
-//  Copyright © 2026 ibabyblue. All rights reserved.
-//
+// swift-tools-version: 6.0
 
 import PackageDescription
 
@@ -18,5 +11,6 @@ let package = Package(
     targets: [
         .target(name: "IRouter"),
         .testTarget(name: "IRouterTests", dependencies: ["IRouter"]),
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )
