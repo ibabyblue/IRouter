@@ -26,63 +26,18 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
     }
 
     public var body: some View {
-        let sheetPresentationID = presentationCoordinator.presentationID(
-            for: .sheet
-        )
-        #if !os(macOS)
-        let coverPresentationID = presentationCoordinator.presentationID(
-            for: .fullScreenCover
-        )
-        #endif
-
         NavigationStack(path: pathBinding) {
             destination(router.root)
                 .navigationDestination(for: Route.self) { route in
                     destination(route)
                 }
         }
-        .sheet(
-            item: modalBinding(
-                for: .sheet,
-                presentationID: sheetPresentationID
-            ),
-            onDismiss: {
-                guard let sheetPresentationID else { return }
-                presentationCoordinator.presentationDidDismiss(
-                    id: sheetPresentationID,
-                    style: .sheet
-                )
-            }
-        ) { context in
-            IRouterView(
-                router: context.childRouter,
-                destination: destination
-            )
-            .onAppear {
-                presentationCoordinator.presentationDidAppear(id: context.id)
-            }
+        .background {
+            modalPresentationHost(for: .sheet)
         }
         #if !os(macOS)
-        .fullScreenCover(
-            item: modalBinding(
-                for: .fullScreenCover,
-                presentationID: coverPresentationID
-            ),
-            onDismiss: {
-                guard let coverPresentationID else { return }
-                presentationCoordinator.presentationDidDismiss(
-                    id: coverPresentationID,
-                    style: .fullScreenCover
-                )
-            }
-        ) { context in
-            IRouterView(
-                router: context.childRouter,
-                destination: destination
-            )
-            .onAppear {
-                presentationCoordinator.presentationDidAppear(id: context.id)
-            }
+        .background {
+            modalPresentationHost(for: .fullScreenCover)
         }
         #endif
         .onAppear {
@@ -101,21 +56,91 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
         )
     }
 
-    private func modalBinding(
-        for style: IRouterModalStyle,
-        presentationID: UUID?
-    ) -> Binding<IRouterContext<Route>?> {
+    @ViewBuilder
+    private func modalPresentationHost(
+        for style: IRouterModalStyle
+    ) -> some View {
+        if let session = presentationCoordinator.presentationSession(
+            for: style
+        ) {
+            IRouterModalPresentationHost(
+                session: session,
+                router: router,
+                presentationCoordinator: presentationCoordinator,
+                destination: destination
+            )
+            .id(session.id)
+        }
+    }
+}
+
+private struct IRouterModalPresentationHost<
+    Route: Hashable & Sendable,
+    Content: View
+>: View {
+    let session: IRouterPresentationSession
+    let router: IRouter<Route>
+    let presentationCoordinator: IRouterPresentationCoordinator<Route>
+    let destination: (Route) -> Content
+
+    @ViewBuilder
+    var body: some View {
+        switch session.style {
+        case .sheet:
+            presenterAnchor.sheet(
+                item: modalBinding,
+                onDismiss: presentationDidDismiss,
+                content: modalContent
+            )
+        case .fullScreenCover:
+            #if os(macOS)
+            EmptyView()
+            #else
+            presenterAnchor.fullScreenCover(
+                item: modalBinding,
+                onDismiss: presentationDidDismiss,
+                content: modalContent
+            )
+            #endif
+        }
+    }
+
+    private var presenterAnchor: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+    }
+
+    private var modalBinding: Binding<IRouterContext<Route>?> {
         Binding(
-            get: { presentationCoordinator.context(for: style) },
+            get: { presentationCoordinator.context(for: session.style) },
             set: { context in
-                guard context == nil,
-                      let presentationID else { return }
+                guard context == nil else { return }
                 presentationCoordinator.bindingDidDismiss(
-                    id: presentationID,
-                    style: style,
+                    id: session.id,
+                    style: session.style,
                     router: router
                 )
             }
         )
+    }
+
+    private func presentationDidDismiss() {
+        presentationCoordinator.presentationDidDismiss(
+            id: session.id,
+            style: session.style
+        )
+    }
+
+    private func modalContent(
+        context: IRouterContext<Route>
+    ) -> some View {
+        IRouterView(
+            router: context.childRouter,
+            destination: destination
+        )
+        .onAppear {
+            presentationCoordinator.presentationDidAppear(id: context.id)
+        }
     }
 }

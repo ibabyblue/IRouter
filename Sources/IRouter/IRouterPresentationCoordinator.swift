@@ -9,6 +9,11 @@
 import Foundation
 import Observation
 
+struct IRouterPresentationSession: Hashable, Sendable, Identifiable {
+    let id: UUID
+    let style: IRouterModalStyle
+}
+
 @MainActor
 @Observable
 final class IRouterPresentationCoordinator<Route: Hashable & Sendable> {
@@ -51,11 +56,21 @@ final class IRouterPresentationCoordinator<Route: Hashable & Sendable> {
         presentedContext?.style == style ? presentedContext : nil
     }
 
-    func presentationID(for style: IRouterModalStyle) -> UUID? {
-        if dismissing?.style == style {
-            return dismissing?.id
+    func presentationSession(
+        for style: IRouterModalStyle
+    ) -> IRouterPresentationSession? {
+        if let dismissing, dismissing.style == style {
+            return IRouterPresentationSession(
+                id: dismissing.id,
+                style: dismissing.style
+            )
         }
-        return context(for: style)?.id
+        guard let context = context(for: style) else { return nil }
+        return IRouterPresentationSession(id: context.id, style: context.style)
+    }
+
+    func presentationID(for style: IRouterModalStyle) -> UUID? {
+        presentationSession(for: style)?.id
     }
 
     func bindingDidDismiss(

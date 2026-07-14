@@ -43,6 +43,32 @@ struct IRouterPresentationCoordinatorTests {
     }
 
     @Test @MainActor
+    func presentationSessionIdentityChangesOnlyAfterDismissalCompletes() {
+        let router = IRouter<TestRoute>(root: .home)
+        let coordinator = IRouterPresentationCoordinator<TestRoute>()
+        router.sheet(.modal("A"))
+        let contextA = router.modalContext!
+        coordinator.reconcile(desired: contextA)
+        let presentedSession = coordinator.presentationSession(for: .sheet)
+        #expect(presentedSession?.id == contextA.id)
+        coordinator.presentationDidAppear(id: contextA.id)
+
+        router.sheet(.modal("B"), options: [.dismissPresented])
+        let contextB = router.modalContext!
+        coordinator.reconcile(desired: contextB)
+
+        let dismissingSession = coordinator.presentationSession(for: .sheet)
+        #expect(dismissingSession == presentedSession)
+        #expect(dismissingSession?.id == contextA.id)
+
+        coordinator.presentationDidDismiss(id: contextA.id, style: .sheet)
+
+        let promotedSession = coordinator.presentationSession(for: .sheet)
+        #expect(promotedSession?.id == contextB.id)
+        #expect(promotedSession != dismissingSession)
+    }
+
+    @Test @MainActor
     func staleDismissCallbackCannotCompleteNewerDismissal() {
         let router = IRouter<TestRoute>(root: .home)
         let coordinator = IRouterPresentationCoordinator<TestRoute>()
