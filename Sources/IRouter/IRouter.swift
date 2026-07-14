@@ -12,98 +12,131 @@ import Observation
 @MainActor
 @Observable
 public final class IRouter<Route: Hashable & Sendable> {
+    static var redirectLimit: Int { 32 }
+
     public let root: Route
-    public var path: [Route] = []
-    public var sheetContext: IRouterContext<Route>? = nil
-    public var coverContext: IRouterContext<Route>? = nil
+    public private(set) var path: [Route] = []
+    public private(set) var modalContext: IRouterContext<Route>?
+
     private let filters: [IRouterFilter<Route>]
+    private let dismissFromParent: (@MainActor @Sendable () -> Bool)?
 
     public init(root: Route, filters: [IRouterFilter<Route>] = []) {
         self.root = root
         self.filters = filters
+        self.dismissFromParent = nil
     }
 
-    public func push(_ route: Route, dedup: Bool = false, flush: Bool = false) {
-        if flush { clearModals() }
-        switch runFilters(route: route, presentation: .push) {
-        case .allow:
-            if dedup && path.last == route { return }
-            path.append(route)
-        case .block:
-            break
-        case .redirect(let newRoute, let newPresentation):
-            navigate(to: newRoute, as: newPresentation)
+    init(
+        root: Route,
+        filters: [IRouterFilter<Route>],
+        dismissFromParent: @escaping @MainActor @Sendable () -> Bool
+    ) {
+        self.root = root
+        self.filters = filters
+        self.dismissFromParent = dismissFromParent
+    }
+
+    @discardableResult
+    public func navigate(
+        to route: Route,
+        as presentation: IRouterPresentation,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route> {
+        var current = IRouterDestination(route: route, presentation: presentation)
+        var visited: Set<IRouterDestination<Route>> = []
+        var chain: [IRouterDestination<Route>] = []
+        var redirectCount = 0
+
+        while true {
+            guard visited.insert(current).inserted else {
+                return .rejected(.redirectCycle(chain: chain + [current]))
+            }
+            chain.append(current)
+
+            switch runFilters(for: current) {
+            case .allow:
+                return commit(current, options: options)
+            case .block:
+                return .blocked(current)
+            case .redirect(let route, let presentation):
+                let redirected = IRouterDestination(
+                    route: route,
+                    presentation: presentation
+                )
+                guard redirectCount < Self.redirectLimit else {
+                    return .rejected(.redirectLimitExceeded(
+                        chain: chain + [redirected],
+                        limit: Self.redirectLimit
+                    ))
+                }
+                redirectCount += 1
+                current = redirected
+            }
         }
     }
 
-    public func pop() {
-        guard !path.isEmpty else { return }
+    @discardableResult
+    public func push(
+        _ route: Route,
+        options: IRouterNavigationOptions = []
+    ) -> IRouterNavigationOutcome<Route> {
+        navigate(to: route, as: .push, options: options)
+    }
+
+    @discardableResult
+    public func pop() -> Bool {
+        guard !path.isEmpty else { return false }
         path.removeLast()
+        return true
     }
 
-    public func popToRoot() {
+    @discardableResult
+    public func popToRoot() -> Bool {
+        guard !path.isEmpty else { return false }
         path.removeAll()
+        return true
     }
 
-    public func sheet(_ route: Route, flush: Bool = false) {
-        if flush { clearModals() }
-        switch runFilters(route: route, presentation: .sheet) {
-        case .allow:
-            sheetContext = IRouterContext(route: route, filters: filters)
-        case .block:
-            break
-        case .redirect(let newRoute, let newPresentation):
-            navigate(to: newRoute, as: newPresentation)
+    @discardableResult
+    func synchronizePathFromUI(_ newPath: [Route]) -> Bool {
+        guard newPath != path,
+              newPath.count < path.count,
+              path.starts(with: newPath) else { return false }
+        path = newPath
+        return true
+    }
+
+    private func commit(
+        _ destination: IRouterDestination<Route>,
+        options: IRouterNavigationOptions
+    ) -> IRouterNavigationOutcome<Route> {
+        guard destination.presentation == .push else {
+            return .rejected(.unsupportedPresentation(destination.presentation))
         }
-    }
-
-    public func fullScreenCover(_ route: Route, flush: Bool = false) {
-        if flush { clearModals() }
-        switch runFilters(route: route, presentation: .fullScreenCover) {
-        case .allow:
-            coverContext = IRouterContext(route: route, filters: filters)
-        case .block:
-            break
-        case .redirect(let newRoute, let newPresentation):
-            navigate(to: newRoute, as: newPresentation)
+        if options.contains(.deduplicateTop), path.last == destination.route {
+            return .deduplicated(destination)
         }
-    }
-
-    public func dismiss() {
-        if coverContext != nil { coverContext = nil; return }
-        if sheetContext != nil { sheetContext = nil; return }
-        if !path.isEmpty       { path.removeLast() }
-    }
-
-    public func dismissAndPush(_ route: Route) {
-        clearModals()
-        push(route)
-    }
-
-    private func clearModals() {
-        coverContext = nil
-        sheetContext = nil
+        if options.contains(.dismissPresented) {
+            modalContext = nil
+        }
+        path.append(destination.route)
+        return .committed(destination)
     }
 
     private func runFilters(
-        route: Route,
-        presentation: IRouterPresentation
+        for destination: IRouterDestination<Route>
     ) -> IRouterFilter<Route>.Result {
         for filter in filters {
-            let result = filter.handler(route, presentation)
-            switch result {
-            case .allow:            continue
-            case .block, .redirect: return result
+            let result = filter.handler(
+                destination.route,
+                destination.presentation
+            )
+            if case .allow = result {
+                continue
             }
+            return result
         }
         return .allow
-    }
-
-    private func navigate(to route: Route, as presentation: IRouterPresentation) {
-        switch presentation {
-        case .push:            push(route)
-        case .sheet:           sheet(route)
-        case .fullScreenCover: fullScreenCover(route)
-        }
     }
 }

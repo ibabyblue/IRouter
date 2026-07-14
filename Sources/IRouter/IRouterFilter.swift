@@ -30,11 +30,14 @@ public struct IRouterFilter<Route: Hashable & Sendable>: Sendable {
         case redirect(Route, IRouterPresentation)
     }
 
-    let handler: @Sendable (Route, IRouterPresentation) -> Result
+    let handler: @MainActor @Sendable (Route, IRouterPresentation) -> Result
 
     /// 创建拦截器
     /// - Parameter handler: 拦截逻辑闭包，返回 `.allow` / `.block` / `.redirect`
-    public init(_ handler: @Sendable @escaping (Route, IRouterPresentation) -> Result) {
+    public init(
+        _ handler: @MainActor @Sendable @escaping
+            (Route, IRouterPresentation) -> Result
+    ) {
         self.handler = handler
     }
 }
