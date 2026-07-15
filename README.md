@@ -19,12 +19,12 @@ In Xcode, choose **File > Add Package Dependencies** and enter:
 https://github.com/ibabyblue/IRouter.git
 ```
 
-Select version `0.1.0` or later. For a `Package.swift` dependency:
+Select version `0.1.1` or later. For a `Package.swift` dependency:
 
 ```swift
 .package(
     url: "https://github.com/ibabyblue/IRouter.git",
-    from: "0.1.0"
+    from: "0.1.1"
 )
 ```
 
@@ -319,6 +319,10 @@ A stale child router cannot dismiss a newer replacement modal.
 `IRouterView` owns the `NavigationStack`, injects its router through the SwiftUI
 environment, and presents the router's modal content with the context's child
 router.
+
+Sheet and full-screen-cover presenters remain stable for the lifetime of an
+`IRouterView`, so presentation state changes use SwiftUI's native presentation
+and dismissal animations.
 
 Modal replacement is serialized against SwiftUI presentation callbacks. If a
 visible modal is replaced with `.dismissPresented`, the current presentation

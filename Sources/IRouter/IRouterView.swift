@@ -60,17 +60,12 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
     private func modalPresentationHost(
         for style: IRouterModalStyle
     ) -> some View {
-        if let session = presentationCoordinator.presentationSession(
-            for: style
-        ) {
-            IRouterModalPresentationHost(
-                session: session,
-                router: router,
-                presentationCoordinator: presentationCoordinator,
-                destination: destination
-            )
-            .id(session.id)
-        }
+        IRouterModalPresentationHost(
+            style: style,
+            router: router,
+            presentationCoordinator: presentationCoordinator,
+            destination: destination
+        )
     }
 }
 
@@ -78,14 +73,15 @@ private struct IRouterModalPresentationHost<
     Route: Hashable & Sendable,
     Content: View
 >: View {
-    let session: IRouterPresentationSession
+    let style: IRouterModalStyle
     let router: IRouter<Route>
     let presentationCoordinator: IRouterPresentationCoordinator<Route>
     let destination: (Route) -> Content
+    @State private var activeSessionID: UUID?
 
     @ViewBuilder
     var body: some View {
-        switch session.style {
+        switch style {
         case .sheet:
             presenterAnchor.sheet(
                 item: modalBinding,
@@ -113,12 +109,13 @@ private struct IRouterModalPresentationHost<
 
     private var modalBinding: Binding<IRouterContext<Route>?> {
         Binding(
-            get: { presentationCoordinator.context(for: session.style) },
+            get: { presentationCoordinator.context(for: style) },
             set: { context in
-                guard context == nil else { return }
+                guard context == nil,
+                      let activeSessionID else { return }
                 presentationCoordinator.bindingDidDismiss(
-                    id: session.id,
-                    style: session.style,
+                    id: activeSessionID,
+                    style: style,
                     router: router
                 )
             }
@@ -126,9 +123,11 @@ private struct IRouterModalPresentationHost<
     }
 
     private func presentationDidDismiss() {
+        guard let activeSessionID else { return }
+        self.activeSessionID = nil
         presentationCoordinator.presentationDidDismiss(
-            id: session.id,
-            style: session.style
+            id: activeSessionID,
+            style: style
         )
     }
 
@@ -140,6 +139,10 @@ private struct IRouterModalPresentationHost<
             destination: destination
         )
         .onAppear {
+            guard presentationCoordinator.context(for: style)?.id == context.id else {
+                return
+            }
+            activeSessionID = context.id
             presentationCoordinator.presentationDidAppear(id: context.id)
         }
     }
