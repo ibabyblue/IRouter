@@ -19,7 +19,6 @@ struct MultipleRoutersDemoView: View {
                 outcomeB: $outcomeB
             )
         }
-        .id(selection)
     }
 
     private var selectedRouter: IRouter<AppRoute> {

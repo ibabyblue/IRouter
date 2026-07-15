@@ -100,6 +100,33 @@ final class IRouterDemoUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["demo.state.modal"].label, "None")
     }
 
+    func testRouterBSelectionSurvivesRoutersTabReselection() {
+        app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+
+        let routersTab = app.tabBars.buttons["Routers"]
+        XCTAssertTrue(routersTab.waitForExistence(timeout: 2))
+        routersTab.tap()
+
+        let routerB = app.buttons["demo.multiple.target.routerB"]
+        XCTAssertTrue(routerB.waitForExistence(timeout: 2))
+        routerB.tap()
+
+        let selectedRouter = app.staticTexts["demo.multiple.state.selected"]
+        XCTAssertTrue(selectedRouter.label.contains("Router B"))
+        XCTAssertTrue(app.staticTexts["Feed"].exists)
+
+        routersTab.tap()
+
+        XCTAssertEqual(app.state, .runningForeground)
+        XCTAssertTrue(
+            app.otherElements["demo.multiple.root"]
+                .waitForExistence(timeout: 2)
+        )
+        XCTAssertTrue(selectedRouter.label.contains("Router B"))
+    }
+
     private func launchApp() {
         app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]

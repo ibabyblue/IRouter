@@ -19,9 +19,14 @@ In Xcode, choose **File > Add Package Dependencies** and enter:
 https://github.com/ibabyblue/IRouter.git
 ```
 
-The transactional API documented below is currently listed under
-`Unreleased` in the changelog. Before it is tagged, pin integrations to a
-reviewed commit.
+Select version `0.1.0` or later. For a `Package.swift` dependency:
+
+```swift
+.package(
+    url: "https://github.com/ibabyblue/IRouter.git",
+    from: "0.1.0"
+)
+```
 
 ## Quick Start
 
@@ -327,6 +332,17 @@ dismissal therefore synchronize router state. Forward navigation through
 `NavigationLink(value:)` is unsupported because it attempts to grow the bound
 path outside the router transaction APIs; use `push`, `sheet`, or
 `fullScreenCover` instead.
+
+When switching between multiple router instances, pass the selected router
+directly to `IRouterView`. Do not attach `.id(selection)` to `IRouterView` to
+force recreation: that also tears down its `NavigationStack` during the
+surrounding SwiftUI update and can reset or crash the active tab.
+
+```swift
+IRouterView(router: selectedRouter) { route in
+    destination(for: route)
+}
+```
 
 On macOS, `fullScreenCover(_:)` is unavailable at compile time. A dynamic call
 through `navigate(to:as:options:)` with `.fullScreenCover` compiles but returns
