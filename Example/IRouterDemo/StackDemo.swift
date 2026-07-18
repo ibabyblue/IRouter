@@ -1,10 +1,14 @@
 import IRouter
 import SwiftUI
 
+/// Hosts the typed stack transaction lab.
 struct StackDemoView: View {
+    /// The router that owns the lab's navigation stack.
     @State private var router = IRouter<AppRoute>(root: .home)
+    /// The latest formatted stack command outcome.
     @State private var latestOutcome = "No command yet"
 
+    /// Hosts stack destinations in one router view.
     var body: some View {
         IRouterView(router: router) { route in
             switch route {
@@ -22,11 +26,16 @@ struct StackDemoView: View {
     }
 }
 
+/// Renders stack commands and state for the current route.
 private struct StackLabView: View {
+    /// The route currently rendered by the stack.
     let route: AppRoute
+    /// The latest outcome shared with the root lab.
     @Binding var latestOutcome: String
+    /// The router injected for the visible stack level.
     @Environment(IRouter<AppRoute>.self) private var router
 
+    /// Builds append, contraction, and state-inspection controls.
     var body: some View {
         DemoSectionContainer(title: "Stack Lab") {
             Section("Current destination") {

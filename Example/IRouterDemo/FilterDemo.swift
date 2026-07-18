@@ -1,11 +1,16 @@
 import IRouter
 import SwiftUI
 
+/// Hosts the filter, redirect, block, and cycle-detection lab.
 struct FilterDemoView: View {
+    /// The authentication state read synchronously by the filter chain.
     @State private var auth: DemoAuthState
+    /// The router configured with the lab's complete filter chain.
     @State private var router: IRouter<AppRoute>
+    /// The latest formatted navigation outcome.
     @State private var latestOutcome = "No command yet"
 
+    /// Creates the authentication state and router filter chain together.
     init() {
         let auth = DemoAuthState()
         _auth = State(initialValue: auth)
@@ -29,6 +34,7 @@ struct FilterDemoView: View {
         ]))
     }
 
+    /// Hosts every filtered destination in one router view.
     var body: some View {
         IRouterView(router: router) { route in
             FilterLabView(
@@ -40,12 +46,18 @@ struct FilterDemoView: View {
     }
 }
 
+/// Renders filter controls and state for the current route.
 private struct FilterLabView: View {
+    /// The route currently rendered by the router.
     let route: AppRoute
+    /// The authentication state shared with the filter closure.
     @Bindable var auth: DemoAuthState
+    /// The latest outcome shared with the root lab.
     @Binding var latestOutcome: String
+    /// The router for the currently visible hierarchy level.
     @Environment(IRouter<AppRoute>.self) private var router
 
+    /// Builds authentication, inspector, filter, and dismissal controls.
     var body: some View {
         DemoSectionContainer(title: "Filter Lab") {
             Section("Current destination") {

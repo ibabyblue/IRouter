@@ -1,10 +1,14 @@
 import IRouter
 import SwiftUI
 
+/// Hosts the hierarchical child-router and nested-modal lab.
 struct NestedDemoView: View {
+    /// The root router that opens the first nested modal level.
     @State private var router = IRouter<AppRoute>(root: .home)
+    /// Outcome text retained independently for each visible level.
     @State private var outcomes = DemoOutcomeStore()
 
+    /// Hosts every hierarchy level through the shared destination builder.
     var body: some View {
         IRouterView(router: router) { route in
             NestedLabView(route: route, outcomes: outcomes)
@@ -12,11 +16,16 @@ struct NestedDemoView: View {
     }
 }
 
+/// Renders commands for one router level in the nested hierarchy.
 private struct NestedLabView: View {
+    /// The route currently rendered at this level.
     let route: AppRoute
+    /// The shared per-level outcome store.
     let outcomes: DemoOutcomeStore
+    /// The child or root router for the visible level.
     @Environment(IRouter<AppRoute>.self) private var router
 
+    /// Builds hierarchy navigation, dismissal, and inspection controls.
     var body: some View {
         DemoSectionContainer(title: "Nested Lab") {
             Section("Current destination") {
@@ -85,15 +94,20 @@ private struct NestedLabView: View {
         }
     }
 
+    /// The modal nesting level represented by the current router root.
     private var level: Int {
         guard case .nested(let level) = router.root else { return 0 }
         return level
     }
 
+    /// The stable storage key for this level's latest outcome.
     private var outcomeKey: String {
         "nested-level-\(level)"
     }
 
+    /// Records a formatted navigation outcome for the current level.
+    ///
+    /// - Parameter outcome: The navigation result to display.
     private func record(_ outcome: IRouterNavigationOutcome<AppRoute>) {
         outcomes.record(outcome.displayText, for: outcomeKey)
     }

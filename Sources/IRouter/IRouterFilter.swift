@@ -6,9 +6,10 @@
 //  Copyright © 2026 ibabyblue. All rights reserved.
 //
 
-/// 路由拦截器
+/// Evaluates one route before a navigation transaction commits.
 ///
-/// 在每次导航执行前触发，可放行、拦截或重定向到另一条路由。
+/// Filters run in registration order. The first block or redirect ends the
+/// current pass, and redirected destinations restart from the first filter.
 ///
 /// ```swift
 /// IRouterFilter { route, presentation in
@@ -20,20 +21,22 @@
 /// ```
 public struct IRouterFilter<Route: Hashable & Sendable>: Sendable {
 
-    /// 拦截结果
+    /// A decision produced for one route and presentation pair.
     public enum Result: Sendable {
-        /// 放行，继续执行导航
+        /// Allows the next filter, or commits after the final filter.
         case allow
-        /// 拦截，不执行任何导航
+        /// Blocks the destination without mutating router state.
         case block
-        /// 重定向到另一条路由（redirect 本身同样过 Filter 链）
+        /// Restarts filtering with another route and presentation.
         case redirect(Route, IRouterPresentation)
     }
 
+    /// The main-actor closure evaluated by the owning router.
     let handler: @MainActor @Sendable (Route, IRouterPresentation) -> Result
 
-    /// 创建拦截器
-    /// - Parameter handler: 拦截逻辑闭包，返回 `.allow` / `.block` / `.redirect`
+    /// Creates a filter from a synchronous main-actor decision closure.
+    ///
+    /// - Parameter handler: The closure that allows, blocks, or redirects a destination.
     public init(
         _ handler: @MainActor @Sendable @escaping
             (Route, IRouterPresentation) -> Result

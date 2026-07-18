@@ -8,12 +8,21 @@
 
 import SwiftUI
 
+/// Hosts a typed router in a `NavigationStack` and stable modal presenters.
 public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
+    /// The observable router that owns stack and modal state.
     @Bindable private var router: IRouter<Route>
+    /// The coordinator that serializes modal state with SwiftUI callbacks.
     @State private var presentationCoordinator:
         IRouterPresentationCoordinator<Route>
+    /// Builds view content for every route at this router level.
     private let destination: (Route) -> Content
 
+    /// Creates a router host and destination builder.
+    ///
+    /// - Parameters:
+    ///   - router: The router whose state drives this view hierarchy.
+    ///   - destination: A builder that renders every route value.
     public init(
         router: IRouter<Route>,
         @ViewBuilder destination: @escaping (Route) -> Content
@@ -25,6 +34,7 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
         self.destination = destination
     }
 
+    /// Builds the navigation stack, stable modal hosts, and router environment.
     public var body: some View {
         NavigationStack(path: pathBinding) {
             destination(router.root)
@@ -49,6 +59,7 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
         .environment(router)
     }
 
+    /// Synchronizes system-driven stack contraction without permitting UI growth.
     private var pathBinding: Binding<[Route]> {
         Binding(
             get: { router.path },
@@ -56,6 +67,9 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
         )
     }
 
+    /// Builds the stable presentation host for one modal style.
+    ///
+    /// - Parameter style: The sheet or full-screen-cover style to host.
     @ViewBuilder
     private func modalPresentationHost(
         for style: IRouterModalStyle
@@ -69,16 +83,23 @@ public struct IRouterView<Route: Hashable & Sendable, Content: View>: View {
     }
 }
 
+/// Owns one stable SwiftUI modal modifier for the lifetime of `IRouterView`.
 private struct IRouterModalPresentationHost<
     Route: Hashable & Sendable,
     Content: View
 >: View {
+    /// The modal style handled by this host.
     let style: IRouterModalStyle
+    /// The router updated after interactive dismissal.
     let router: IRouter<Route>
+    /// The coordinator that supplies and serializes presentation context.
     let presentationCoordinator: IRouterPresentationCoordinator<Route>
+    /// Builds route content recursively inside a modal child router.
     let destination: (Route) -> Content
+    /// The context identity that has appeared in this host.
     @State private var activeSessionID: UUID?
 
+    /// Applies the sheet or platform-available full-screen-cover modifier.
     @ViewBuilder
     var body: some View {
         switch style {
@@ -101,12 +122,14 @@ private struct IRouterModalPresentationHost<
         }
     }
 
+    /// A layout-neutral anchor that keeps the presentation modifier stable.
     private var presenterAnchor: some View {
         Color.clear
             .frame(width: 0, height: 0)
             .accessibilityHidden(true)
     }
 
+    /// Bridges coordinator context to the SwiftUI modal item binding.
     private var modalBinding: Binding<IRouterContext<Route>?> {
         Binding(
             get: { presentationCoordinator.context(for: style) },
@@ -122,6 +145,7 @@ private struct IRouterModalPresentationHost<
         )
     }
 
+    /// Completes dismissal for the active presentation session.
     private func presentationDidDismiss() {
         guard let activeSessionID else { return }
         self.activeSessionID = nil
@@ -131,6 +155,10 @@ private struct IRouterModalPresentationHost<
         )
     }
 
+    /// Builds a recursive router host for one modal context.
+    ///
+    /// - Parameter context: The modal context and child router to render.
+    /// - Returns: A view that reports a matching context appearance.
     private func modalContent(
         context: IRouterContext<Route>
     ) -> some View {

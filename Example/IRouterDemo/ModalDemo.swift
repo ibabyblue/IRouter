@@ -1,10 +1,14 @@
 import IRouter
 import SwiftUI
 
+/// Hosts direct-modal presentation, replacement, and dismissal scenarios.
 struct ModalDemoView: View {
+    /// The root router that owns the lab's direct modal.
     @State private var router = IRouter<AppRoute>(root: .home)
+    /// The latest formatted modal transaction outcome.
     @State private var latestOutcome = "No command yet"
 
+    /// Hosts root and modal-child routes through one destination builder.
     var body: some View {
         IRouterView(router: router) { route in
             ModalLabView(
@@ -16,12 +20,18 @@ struct ModalDemoView: View {
     }
 }
 
+/// Renders modal commands for either the root router or a modal child router.
 private struct ModalLabView: View {
+    /// The route currently rendered at this hierarchy level.
     let route: AppRoute
+    /// The root router used for direct-modal replacement scenarios.
     let rootRouter: IRouter<AppRoute>
+    /// The latest outcome shared across root and modal content.
     @Binding var latestOutcome: String
+    /// The router belonging to the currently visible hierarchy level.
     @Environment(IRouter<AppRoute>.self) private var router
 
+    /// Builds modal presentation, replacement, child-stack, and inspector controls.
     var body: some View {
         DemoSectionContainer(title: "Modal Lab") {
             Section("Current destination") {
@@ -172,6 +182,7 @@ private struct ModalLabView: View {
         .accessibilityIdentifier(modalIdentifier)
     }
 
+    /// The stable accessibility identity for the currently rendered modal route.
     private var modalIdentifier: String {
         switch presentedModalRoute {
         case .modal("A"): DemoAccessibility.modalA
@@ -181,6 +192,7 @@ private struct ModalLabView: View {
         }
     }
 
+    /// The compact route name of the root router's current direct modal.
     private var currentModalText: String {
         if let modalRoute = rootRouter.modalContext?.route {
             return modalRoute.compactTitle
@@ -188,14 +200,17 @@ private struct ModalLabView: View {
         return "None"
     }
 
+    /// A value indicating whether this view is rendered inside a modal child router.
     private var isModalDestination: Bool {
         router !== rootRouter
     }
 
+    /// The route used to select root or modal-specific presentation metadata.
     private var presentedModalRoute: AppRoute {
         isModalDestination ? router.root : route
     }
 
+    /// The state-inspector prefix for the root or modal-child router.
     private var inspectorPrefix: String {
         if isModalDestination {
             return "\(DemoAccessibility.modalInspectorPrefix).child"

@@ -16,4 +16,6 @@ DerivedData/
 .superpowers/
 .claude/
 docs/
-CHANGELOG.md
+
+# Repository-local agent guidance
+/AGENTS.md

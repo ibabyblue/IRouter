@@ -1,13 +1,28 @@
 import XCTest
 
+/// Exercises live IRouter presentation and catalog behavior through the Example app.
 @MainActor
 final class IRouterDemoUITests: XCTestCase {
+    /// The launched Example application for the current test.
     private var app: XCUIApplication!
 
+    /// Stops each test immediately after its first assertion failure.
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
 
+    /// Verifies that every documented router lab is reachable from the Example catalog.
+    func testCatalogExposesAllFiveLabs() {
+        app = XCUIApplication()
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+
+        for title in ["Stack", "Filters", "Modals", "Nested", "Routers"] {
+            XCTAssertTrue(app.tabBars.buttons[title].waitForExistence(timeout: 2))
+        }
+    }
+
+    /// Verifies that a child router can dismiss the sheet owned by its parent.
     func testChildRouterDismissesOwningSheet() {
         launchApp()
 
@@ -21,6 +36,7 @@ final class IRouterDemoUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["demo.state.modal"].label, "None")
     }
 
+    /// Verifies that sheet-to-cover replacement never presents both modals together.
     func testSheetToCoverReplacementIsSerialized() {
         launchApp()
 
@@ -58,6 +74,7 @@ final class IRouterDemoUITests: XCTestCase {
         XCTAssertTrue(modalB.exists)
     }
 
+    /// Verifies that rapid modal replacement presents only the latest context.
     func testRapidReplacementPresentsOnlyLatestContext() {
         launchApp()
 
@@ -87,6 +104,7 @@ final class IRouterDemoUITests: XCTestCase {
         XCTAssertFalse(modalB.exists)
     }
 
+    /// Verifies that interactive sheet dismissal clears router-owned modal state.
     func testInteractiveDismissalClearsRouterInspector() {
         launchApp()
 
@@ -100,6 +118,7 @@ final class IRouterDemoUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["demo.state.modal"].label, "None")
     }
 
+    /// Verifies that selecting Router B survives reselecting the Routers tab.
     func testRouterBSelectionSurvivesRoutersTabReselection() {
         app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
@@ -127,6 +146,7 @@ final class IRouterDemoUITests: XCTestCase {
         XCTAssertTrue(selectedRouter.label.contains("Router B"))
     }
 
+    /// Launches the app in UI-testing mode and opens the Modals lab.
     private func launchApp() {
         app = XCUIApplication()
         app.launchArguments = ["-ui-testing"]
@@ -134,6 +154,12 @@ final class IRouterDemoUITests: XCTestCase {
         app.tabBars.buttons["demo.tab.modals"].tap()
     }
 
+    /// Waits until an element no longer exists.
+    ///
+    /// - Parameters:
+    ///   - element: The element expected to disappear.
+    ///   - timeout: The maximum number of seconds to wait.
+    /// - Returns: `true` when disappearance completes before the timeout.
     private func waitForDisappearance(
         _ element: XCUIElement,
         timeout: TimeInterval = 2
