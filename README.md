@@ -26,13 +26,9 @@ IRouter is a SwiftUI router for typed, transactional stack and modal navigation.
 
 ## Installation
 
-In Xcode, choose **File > Add Package Dependencies** and enter:
+In Xcode, choose **File → Add Package Dependencies** and enter the repository URL.
 
-```text
-https://github.com/ibabyblue/IRouter.git
-```
-
-Select version `0.2.0` or later, or add the dependency to `Package.swift`:
+To add IRouter in `Package.swift`, declare the package dependency:
 
 ```swift
 dependencies: [
@@ -43,7 +39,20 @@ dependencies: [
 ]
 ```
 
-Link the `IRouter` product to your target. The package has no external dependencies.
+Then add the IRouter product to your target:
+
+```swift
+targets: [
+    .target(
+        name: "YourTarget",
+        dependencies: [
+            .product(name: "IRouter", package: "IRouter")
+        ]
+    )
+]
+```
+
+The package has no external dependencies.
 
 ## Quick Start
 
